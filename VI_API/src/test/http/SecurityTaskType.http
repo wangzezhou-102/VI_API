@@ -1,0 +1,52 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+###安保类型预设库修改
+POST http://localhost:8006/setRepo
+Content-Type: application/json
+
+[
+  {
+    "id": 1,
+    "repoIds": [
+      1, 2,
+    ]
+  },
+  {
+    "id": 2,
+    "repoIds": [
+      1,2,3
+    ]
+  },
+  {
+    "id": 3,
+    "repoIds": [
+      1,2,3
+    ]
+  }
+]
+
+###安保类型预设库查询
+POST http://localhost:8006/readRepo
+Content-Type: application/json
+
+{
+}
+
+###安保类型 预设地点查询
+POST http://localhost:8006/securitytypeplace
+Content-Type: application/json
+
+{
+}
+
+###预设布控库下拉
+POST http://localhost:8006/listrepo
+Content-Type: application/json
+
+{}
+
+###
