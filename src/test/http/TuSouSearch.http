@@ -1,0 +1,31 @@
+
+###
+
+POST http://127.0.0.1:8006/tusou_search_sort HTTP/1.1
+Content-Type: application/json
+
+{
+  "requestId": "request42321",
+  "from": 0,
+  "size": 10,
+  "data": {
+    "uid": "hangzhou",
+    "taskId": "512041492240442db7462770e968e785",
+    "noFeature": "1",
+    "type": "person",
+    "attribute": {
+      "sex": "0"
+    }
+  }
+}
+
+####
+POST http://33.95.245.246:8801/search
+Content-Type: application/json
+
+{
+
+
+}
+
+###

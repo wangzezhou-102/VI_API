@@ -1,0 +1,97 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+###收藏图片
+POST http://localhost:8006/addPicture
+Content-Type: application/json
+
+{
+  "folderId": "6",
+  "picture" :
+{
+  "_index": "tt_person_index-20190602",
+  "_type": "default",
+  "_source": {
+    "origImage": "https://k.zol-img.com.cn/sjbbs/7692/a7691489_s.jpg",
+    "oriImageSigned": "https://k.zol-img.com.cn/sjbbs/7692/a7691489_s.jpg",
+    "hairScore": 0.85698605,
+    "cropImage": "https://k.zol-img.com.cn/sjbbs/7692/a7691489_s.jpg",
+    "sexScore": 0.7459802,
+    "upper_typeScore": 0.6697427,
+    "hair": "1",
+    "objLeft": 82,
+    "lower_type": "6",
+    "objType": "person",
+    "objTop": 553,
+    "objUUId": "330119520001025303_1559440276664_0_22241",
+    "timestamp": 1559440276664,
+    "leaveTime": -1,
+    "deviceBean": {
+      "latitude": "30.25205",
+      "description": "0",
+      "streamState": 1,
+      "tqApi": "33.95.245.246:8801",
+      "source": "0",
+      "deviceId": "330102540069943460",
+      "deviceName": "南山路-一公园车站",
+      "parentId": "330102540008511890",
+      "playUrl": "rtmp://33.95.245.192:2045/330102540069943460/livestream",
+      "civilCode": "330004",
+      "port": 0,
+      "id": "65",
+      "longitude": "",
+      "status": "ON"
+    },
+    "upper_type": "0",
+    "objBottom": 716,
+    "lower_color": "13",
+    "upper_colorScore": 0.8952415,
+    "sex": "0",
+    "lower_typeScore": 0.6810614,
+    "entryTime": 1559440276664,
+    "lower_colorScore": 0.66150177,
+    "cameraId": "3301025400699434609999",
+    "objId": "a37484d85d9e45a781c7325f0f2e580a",
+    "cropImageSigned": "https://k.zol-img.com.cn/sjbbs/7692/a7691489_s.jpg",
+    "objRight": 271,
+    "upper_color": "10"
+  },
+  "_id": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "_score": 0.8888888
+}}
+
+###取消收藏
+POST http://localhost:8006/removePicture
+Content-Type: application/json
+
+{
+   "id": "17"
+}
+
+###展示该图片详细信息
+POST http://localhost:8006/getPictureById
+Content-Type: application/json
+
+{
+    "id": "36"
+}
+
+###测试
+POST http://localhost:8006/testpic
+Content-Type: application/json
+
+{}
+
+###
+POST http://localhost:8006/picturepagehelper
+Content-Type: application/json
+
+{
+  "folderId": "50",
+  "pageNumber": 1,
+  "pageSize": 3
+}
+###
