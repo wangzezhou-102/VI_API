@@ -29,7 +29,7 @@ public class SSOServiceImpl implements SSOService {
     private String tipurl;
     private FingerTookit fingerTookit;
 
-    //解析idToken
+    /*//解析idToken
     public DingdangUserRetriever.User resolveIdToken(HttpSession session) throws JoseException, IOException {
         String publicKey = "{\"kty\":\"RSA\",\"kid\":\"1346614912326510837\",\"alg\":\"RS256\",\"n\":\"hOdf08cku1cEddGWHjOxalfqqmrMJ5LotXT28r0pgsw82uZiSNhi4kr1qVB7z3vUeqh0TffekWxsxGc0VXGoYrPYRkkS08old8CNZQjl7AbnY179kwPilburFuMXioYO55UgvXm2mpCBL8RKGiDSORlVXruBYhxGxZ8yAaloIPVZMTIBjhKtq_fc9K1fygjR7Q3BJJkDcLU92P1Jb8_EbpvRhkHzjKi-FcXbflPWY8dMQpksInp9c-AUByVvYQD3me94yVpyOcwVNUhT5sDUOHhbWjs0gkllY86GRqIHMpNk8VDI7BiXTny-etm7AGyU0_AJlwn4JcsERCqozH7n6w\",\"e\":\"AQAB\"}";
         String idToken = (String)session.getAttribute("idToken");
@@ -43,34 +43,18 @@ public class SSOServiceImpl implements SSOService {
             return token;
         }
         return null;
-    }
+    }*/
     //获取IdToken
     public void getIdToken(HttpSession session){
         System.out.println("开始获取idToken");
-        String idToken = (String)session.getAttribute("idToken");
-        if(StringUtils.isEmpty(idToken)){
-            Map<String,String> map = new HashMap<>();
-            map.put("enterpriseId","police");
-            map.put("redirect_uri","http://spzn.hzgaaqfwpt.hzs.zj");
-            String posturl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18";
-            StringEntity paramsEntity = new StringEntity(JSON.toJSONString(map),"UTF-8");
-            String id_token = MyHttpClientPool.fetchByPostMethod(posturl, paramsEntity);
-            if(!StringUtils.isEmpty(id_token)){
-                System.out.println("通过TAP从4A获取到的id_token:"+ id_token);
-                session.setAttribute("idToken",id_token);
-                System.out.println("idToken保存成功!");
-                System.out.println("开始解析idToken:");
-                try{
-                    DingdangUserRetriever.User user = resolveIdToken(session);
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }else{
-                System.out.println("通过TAP从4A获取到的id_token:"+ id_token);
-            }
-        }
+        String posturl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18";
+        String id_token = MyHttpClientPool.fetchByGetMethod(posturl+"?enterpriseId=police&redirect_uri=https://spzn.hzgaaqfwpt.hzs.zj/getidtoken");
+        System.out.println("通过TAP从4A获取idToken时的返回值:"+ id_token);
+        session.setAttribute("idToken",id_token);
+        System.out.println("返回值保存成功!");
+
     }
-    //判断用户登录
+   /* //判断用户登录
     public ResultVo SSO(JSONObject jsonObject){
         //TODO
         //user_access_token(格式不确定,封装成bean,在session中获取进行判断)
@@ -83,7 +67,7 @@ public class SSOServiceImpl implements SSOService {
         System.out.println("token的uuid:"+token.getUdAccountUuid());
         System.out.println("token的access_token:"+token.getAzp());
         return null;
-    }
+    }*/
 
 
 }

@@ -36,17 +36,17 @@ public class UserAccessTokenFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest)req;
         //获取user_access_token
         String userAccessToken =  request.getParameter("user_access_token");
+        HttpSession session = request.getSession();
         if(userAccessToken != null && userAccessToken.length() > 0) {
             //保存user_access_token供申请TIP令牌使用
-            HttpSession session = request.getSession();
             session.setAttribute("userAccessToken", userAccessToken);
             System.out.println("tap访问令牌：" + userAccessToken);
+            //获取idToken
+            ssoService.getIdToken(session);
             //发送请求获取tip token
             apiService.getTipAccessToken(session);
             //tipToken过期处理
             //apiService.requestTipToken(session);
-            //获取idToken
-            ssoService.getIdToken(session);
         }
         chain.doFilter(req,resp);
     }
@@ -54,6 +54,5 @@ public class UserAccessTokenFilter implements Filter {
     public void destroy() {
         System.out.println("useraccesstokenfilter destroy");
     }
-
 
 }

@@ -1,5 +1,6 @@
 package com.secusoft.web.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.secusoft.web.core.common.Constants;
 import com.secusoft.web.core.util.ResponseUtil;
 import com.secusoft.web.model.ResultVo;
@@ -7,6 +8,7 @@ import com.secusoft.web.service.SSOService;
 import org.jose4j.lang.JoseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,7 +26,7 @@ public class SSOController {
     @Resource
     private SSOService ssoService;
     //获取用户详细信息
-    @PostMapping("/getUserDetailInfo")
+   /* @PostMapping("/getuserdetailinfo")
     public ResponseEntity getUserDetailInfo(HttpSession session){
         ResultVo userDetailInfo = null;
         try{
@@ -33,6 +35,13 @@ public class SSOController {
             e.printStackTrace();
         }
         return ResponseUtil.handle(Constants.OK, userDetailInfo);
+    }*/
+    //获取id_token
+    @GetMapping("/getidtoken")
+    public ResponseEntity getIdToken(JSONObject jsonObject,HttpSession session){
+        System.out.println("从4A获取到的数据所有值为(从中获取id_token): "+jsonObject);
+        return null;
     }
+
 
 }
