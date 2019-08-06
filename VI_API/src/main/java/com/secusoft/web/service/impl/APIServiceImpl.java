@@ -285,46 +285,143 @@ public class APIServiceImpl implements APIService {
 		}
 		return null;
 	}
-	
-	/**
-	 * 获取图片
-	 */
-	@Override
-	public void requestAPI(String picUrl, HttpServletRequest request, HttpServletResponse response) {
-		try {
-			URL url = new URL(picUrl);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod(HttpMethod.GET.name());
-			conn.setConnectTimeout(5000);
-			//通过输入流获取图片数据
-			InputStream inStream = conn.getInputStream();
-			byte data[] = readInputStream(inStream);
-			inStream.close();
-			//设置返回的文件类型
-			response.setContentType(MediaType.IMAGE_JPEG_VALUE);
-			OutputStream os = response.getOutputStream();
-			os.write(data);
-			os.flush();
-			os.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	protected static byte[] readInputStream(InputStream inStream) throws Exception {
-		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-		byte[] buffer = new byte[2048];
-		int len = 0;
-		while ((len = inStream.read(buffer)) != -1) {
-			outStream.write(buffer, 0, len);
-		}
-		return outStream.toByteArray();
-	}
-	public static void main(String[] args) {
-		String appId = "de7329";
-		String appKey = "8ecb08d49659dd77";
-		JSONObject jobj = new JSONObject();
-		jobj.put("app_id", appId);
-		FingerTookit t = new FingerTookit(appId, appKey);
-		System.out.println(t.buildFingerprint(jobj));
-	}
+     /**
+     * 获取图片
+     */
+    @Override
+    public void requestAPI(HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("请求图像资源开始：");
+        HttpSession session = request.getSession();
+        String tipAccessToken = (String)session.getAttribute("tipAccessToken");
+        System.out.println("tiptoken："+tipAccessToken);
+        String picUrl = null;
+        try {
+            picUrl = request.getQueryString();
+            URL url = new URL("https://"+tipurl+"/spzn/pic?" + picUrl);
+            System.out.println("请求图像完整路径:    https://"+tipurl+"/spzn/pic?" + picUrl);
+            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+
+                        }
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+
+                        }
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+                    }
+            };
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCerts, new SecureRandom());
+            conn.setSSLSocketFactory(new MySocketFactory(sslContext.getSocketFactory()));
+
+            conn.setHostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String s, SSLSession sslSession) {
+                    return true;
+                }
+            });
+
+            //设置请求方式为get
+            conn.setRequestMethod(HttpMethod.GET.name());
+            //conn.setRequestProperty("X-trustuser-access-token",userAccessToken);
+            conn.setRequestProperty("X-trustagw-access-token",tipAccessToken);
+            conn.setRequestProperty("Host",spznHost);
+            conn.setConnectTimeout(5000);
+            conn.connect();
+            //通过输入流获取图片数据
+            InputStream inStream = conn.getInputStream();
+            byte data[] = readInputStream(inStream);
+            inStream.close();
+            //设置返回的文件类型
+            response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+            OutputStream os = response.getOutputStream();
+            os.write(data);
+            os.flush();
+            os.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+private static class MySocketFactory extends SSLSocketFactory {
+
+    private final SSLSocketFactory delegate;
+
+    public MySocketFactory(SSLSocketFactory sslSocketFactory) {
+        this.delegate = sslSocketFactory;
+    }
+    // 返回默认启用的密码套件。除非一个列表启用，对SSL连接的握手会使用这些密码套件。
+    // 这些默认的服务的最低质量要求保密保护和服务器身份验证
+    @Override
+    public String[] getDefaultCipherSuites() {
+        return delegate.getDefaultCipherSuites();
+    }
+
+    // 返回的密码套件可用于SSL连接启用的名字
+    @Override
+    public String[] getSupportedCipherSuites() {
+        return delegate.getSupportedCipherSuites();
+    }
+
+
+    @Override
+    public Socket createSocket(final Socket socket, final String host, final int port,
+                               final boolean autoClose) throws IOException {
+        final Socket underlyingSocket = delegate.createSocket(socket, host, port, autoClose);
+        return overrideProtocol(underlyingSocket);
+    }
+
+
+    @Override
+    public Socket createSocket(final String host, final int port) throws IOException {
+        final Socket underlyingSocket = delegate.createSocket(host, port);
+        return overrideProtocol(underlyingSocket);
+    }
+
+    @Override
+    public Socket createSocket(final String host, final int port, final InetAddress localAddress,
+                               final int localPort) throws
+            IOException {
+        final Socket underlyingSocket = delegate.createSocket(host, port, localAddress, localPort);
+        return overrideProtocol(underlyingSocket);
+    }
+
+    @Override
+    public Socket createSocket(final InetAddress host, final int port) throws IOException {
+        final Socket underlyingSocket = delegate.createSocket(host, port);
+        return overrideProtocol(underlyingSocket);
+    }
+
+    @Override
+    public Socket createSocket(final InetAddress host, final int port, final InetAddress localAddress,
+                               final int localPort) throws
+            IOException {
+        final Socket underlyingSocket = delegate.createSocket(host, port, localAddress, localPort);
+        return overrideProtocol(underlyingSocket);
+    }
+
+    private Socket overrideProtocol(final Socket socket) {
+        if (!(socket instanceof SSLSocket)) {
+            throw new RuntimeException("An instance of SSLSocket is expected");
+        }
+        ((SSLSocket) socket).setEnabledProtocols(new String[]{"TLSv1"});
+        return socket;
+    }
+
+}
+    protected static byte[] readInputStream(InputStream inStream) throws Exception {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int len = 0;
+        while ((len = inStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, len);
+        }
+        return outStream.toByteArray();
+    }
 }
