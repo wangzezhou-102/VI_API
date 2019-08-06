@@ -3,6 +3,7 @@ package com.secusoft.web.core.filter;
 import com.secusoft.web.core.support.FingerTookit;
 import com.secusoft.web.service.APIService;
 import com.secusoft.web.service.SSOService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class UserAccessTokenFilter implements Filter {
     @Value("${spzn.appid}")

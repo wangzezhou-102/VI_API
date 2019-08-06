@@ -290,9 +290,9 @@ public class APIServiceImpl implements APIService {
 	 * 获取图片
 	 */
 	@Override
-	public void requestAPI(HttpServletRequest request, HttpServletResponse response) {
+	public void requestAPI(String picUrl, HttpServletRequest request, HttpServletResponse response) {
 		try {
-			URL url = new URL("http://127.0.0.1:8106/pic?picUrl=http://127.0.0.1:8105/static/123.jpg");
+			URL url = new URL(picUrl);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod(HttpMethod.GET.name());
 			conn.setConnectTimeout(5000);

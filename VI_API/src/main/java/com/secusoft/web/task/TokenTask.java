@@ -19,18 +19,19 @@ import javax.servlet.http.HttpSession;
  * @since 2019/07/29
  */
 public class TokenTask implements Job {
-
-    private static Logger log = LoggerFactory.getLogger(TokenTask.class);
-
-    public TokenTask(){}
-    @Resource
-    public APIService apiService;
-    @Override
-    public void execute(JobExecutionContext jec) throws JobExecutionException {
-        JobDataMap patrolMap = jec.getJobDetail().getJobDataMap();
-        HttpSession session = (HttpSession) patrolMap.get("params");
-        log.info("获取新的tipToken：" );
-        apiService.getTipAccessToken(session);
-        log.info("获取tipToken成功：");
-    }
+	
+	private static Logger log = LoggerFactory.getLogger(TokenTask.class);
+	
+	public TokenTask() {
+	}
+	@Resource
+	public APIService apiService;
+	@Override
+	public void execute(JobExecutionContext jec) throws JobExecutionException {
+		JobDataMap patrolMap = jec.getJobDetail().getJobDataMap();
+		HttpSession session = (HttpSession) patrolMap.get("params");
+		log.info("获取新的tipToken：");
+		apiService.getTipAccessToken(session);
+		log.info("获取tipToken成功：");
+	}
 }
