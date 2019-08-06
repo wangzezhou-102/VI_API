@@ -11,9 +11,10 @@ public interface APIService {
     //业务API 对接
     ResultVo requestAPI(JSONObject jsonObject, HttpServletRequest request);
     //获取图片
-    void requestAPI(String picUrl, HttpServletRequest request, HttpServletResponse response);
+    void requestAPI(HttpServletRequest request, HttpServletResponse response);
     //获取TIP 访问令牌
     ResultVo getTipAccessToken(HttpSession session);
     //重新获取TIP 访问令牌
     void requestTipToken(HttpSession session);
+   
 }
