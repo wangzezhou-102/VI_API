@@ -6,13 +6,11 @@ import com.secusoft.web.core.util.ResponseUtil;
 import com.secusoft.web.model.ResultVo;
 import com.secusoft.web.service.APIService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 业务API 对接 接口
@@ -31,8 +29,11 @@ public class APIController {
         ResultVo resultVo = apiService.requestAPI(jsonObject, request);
         return ResponseUtil.handle(Constants.OK, resultVo);
     }
-
-
+    
+    @GetMapping("/spzn/pic")
+    public void req(HttpServletRequest request, HttpServletResponse response){
+        apiService.requestAPI(request,response);
+    }
 
 }
 
