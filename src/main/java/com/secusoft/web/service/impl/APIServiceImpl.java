@@ -345,7 +345,6 @@ public class APIServiceImpl implements APIService {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, trustAllCerts, new SecureRandom());
             conn.setSSLSocketFactory(new MySocketFactory(sslContext.getSocketFactory()));
-
             conn.setHostnameVerifier(new HostnameVerifier() {
                 @Override
                 public boolean verify(String s, SSLSession sslSession) {
