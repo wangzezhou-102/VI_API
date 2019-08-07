@@ -12,14 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@Component
 public class UserAccessTokenFilter implements Filter {
-    @Value("${spzn.appid}")
-    private String appid;
-    @Value("${spzn.appkey}")
-    private String appkey;
-    @Value("${tip.url}")
-    private String tipurl;
+
     //指纹生成
     private FingerTookit fingerTookit;
     @Autowired

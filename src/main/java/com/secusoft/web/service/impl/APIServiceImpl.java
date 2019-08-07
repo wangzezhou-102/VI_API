@@ -52,14 +52,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@Slf4j
 public class APIServiceImpl implements APIService {
     @Value("${spzn.appid}")
-    private String appid;
+    private String appId;
     @Value("${spzn.appkey}")
-    private String appkey;
+    private String appKey;
     @Value("${tip.url}")
-    private String tipurl;
+    private String tipUrl;
     @Value("${spzn.host}")
     private String spznHost;
     //token保存
@@ -117,7 +116,7 @@ public class APIServiceImpl implements APIService {
         }
         //填充消息
         JSONObject jobj = new JSONObject();
-        jobj.put("app_id", appid);
+        jobj.put("app_id", appId);
         jobj.put("primary_token", userAccessToken);
         /*//challenge和mid可以不传(建议传，提高安全性)
         if(!StringUtils.isEmpty(challenge) && !StringUtils.isEmpty(mid)) {
@@ -125,7 +124,7 @@ public class APIServiceImpl implements APIService {
             jobj.put("mid", mid);
         }*/
         //生成指纹
-        fingerTookit = new FingerTookit(appid, appkey);
+        fingerTookit = new FingerTookit(appId, appKey);
         String fingerprint = fingerTookit.buildFingerprint(jobj);
         jobj.put("fingerprint", fingerprint);
         System.out.println("获取tip传参:" + jobj.toString());
@@ -134,7 +133,7 @@ public class APIServiceImpl implements APIService {
         try {
             //https不验证证书
             HttpClient httpClient = createSSLClientDefault();
-            post = new HttpPost("https://" + tipurl + "/sts/token");
+            post = new HttpPost("https://" + tipUrl + "/sts/token");
             // 构造消息头
             post.setHeader("Content-type", "application/json; charset=utf-8");
             // 构建消息实体
@@ -230,7 +229,7 @@ public class APIServiceImpl implements APIService {
             //HttpClient有很多，可以根据个人喜好选用
             HttpClient httpClient = createSSLClientDefault();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
-            post = new HttpPost("https://" + tipurl + requesturl);
+            post = new HttpPost("https://" + tipUrl + requesturl);
             // 构造消息头
             post.setHeader("Content-type", "application/json; charset=utf-8");
             // 填入双令牌
@@ -285,7 +284,7 @@ public class APIServiceImpl implements APIService {
             //HttpClient有很多，可以根据个人喜好选用
             HttpClient httpClient = createSSLClientDefault();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
-            URIBuilder uriBuilder = new URIBuilder("https://" + tipurl + "/spzn/pic");
+            URIBuilder uriBuilder = new URIBuilder("https://" + tipUrl + "/spzn/pic");
             uriBuilder.addParameter("picUrl",picUrl);
             URI build = uriBuilder.build();
             get = new HttpGet(build);
@@ -324,8 +323,8 @@ public class APIServiceImpl implements APIService {
         String picUrl = null;
         try {
             picUrl = request.getQueryString();
-            URL url = new URL("https://"+tipurl+"/spzn/pic?" + picUrl);
-            System.out.println("请求图像完整路径:    https://"+tipurl+"/spzn/pic?" + picUrl);
+            URL url = new URL("https://"+tipUrl+"/spzn/pic?" + picUrl);
+            System.out.println("请求图像完整路径:    https://"+tipUrl+"/spzn/pic?" + picUrl);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
