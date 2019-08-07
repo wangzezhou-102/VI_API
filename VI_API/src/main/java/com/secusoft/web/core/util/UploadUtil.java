@@ -1,6 +1,6 @@
 package com.secusoft.web.core.util;
 
-import com.secusoft.web.utils.ImageUtils;
+import com.secusoft.web.util.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
