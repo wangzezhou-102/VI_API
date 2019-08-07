@@ -32,7 +32,7 @@ public class APIController {
     
     @GetMapping("/spzn/pic")
     public void req(HttpServletRequest request, HttpServletResponse response){
-        apiService.requestAPI(request,response);
+        apiService.requestImage(request,response);
     }
 
 }

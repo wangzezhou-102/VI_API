@@ -13,6 +13,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -283,6 +284,61 @@ public class APIServiceImpl implements APIService {
 		}
 		return null;
 	}
+	/**
+	 * 获取图片
+	 */
+	@Override
+	public void requestImage(HttpServletRequest request, HttpServletResponse response) {
+		System.out.println("请求图像资源开始：");
+		HttpSession session = request.getSession();
+		String tipAccessToken = (String)session.getAttribute("tipAccessToken");
+		System.out.println("tiptoken："+tipAccessToken);
+		String picUrl = null;
+		HttpGet get = null;
+		
+		try {
+			picUrl = request.getQueryString();
+			URL url = new URL("https://"+tipurl+"/spzn/pic?" + picUrl);
+			System.out.println("请求图像完整路径:    https://"+tipurl+"/spzn/pic?" + picUrl);
+			
+			//HttpClient有很多，可以根据个人喜好选用
+			HttpClient httpClient = createSSLClientDefault();
+			
+			//根据http实际方法，构造HttpPost，HttpGet，HttpPut等
+		
+			get = new HttpGet("https://"+tipurl+"/spzn/pic?" + picUrl);
+			// 构造消息头
+			get.setHeader("Content-type", "application/json; charset=utf-8");
+			// 填入双令牌
+			get.setHeader("X-trustagw-access-token", tipAccessToken);
+			get.setHeader("Host", spznHost);
+			// 发送http请求
+			HttpResponse response1 = httpClient.execute(get);
+			HttpEntity ht = response1.getEntity();
+			InputStream inStream = ht.getContent();
+			byte data[] = readInputStream(inStream);
+			System.out.println("test");
+			inStream.close();
+			//设置返回的文件类型
+			response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+			OutputStream os = response.getOutputStream();
+			os.write(data);
+			os.flush();
+			os.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (get != null) {
+				try {//断开链接
+					get.releaseConnection();
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+			
+	}
      /**
      * 获取图片
      */
@@ -332,9 +388,17 @@ public class APIServiceImpl implements APIService {
             conn.setRequestProperty("Host",spznHost);
             conn.setConnectTimeout(5000);
             conn.connect();
+            int status = conn.getResponseCode();
+	        System.out.println("status="+status);
+	        InputStream inStream = null;
             //通过输入流获取图片数据
-            InputStream inStream = conn.getInputStream();
+	        if(status>= HttpStatus.SC_BAD_REQUEST){
+	            inStream = conn.getErrorStream();
+	        }else{
+		        inStream = conn.getInputStream();
+	        }
             byte data[] = readInputStream(inStream);
+	        System.out.println("test");
             inStream.close();
             //设置返回的文件类型
             response.setContentType(MediaType.IMAGE_JPEG_VALUE);
