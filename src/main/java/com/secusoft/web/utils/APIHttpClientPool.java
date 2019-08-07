@@ -36,9 +36,9 @@ import java.util.regex.Pattern;
  *
  */
 @Service
-public class MyHttpClientPool {
-	private static final Logger log = LoggerFactory.getLogger(MyHttpClientPool.class);
-	private volatile static MyHttpClientPool HttpClientConnectionPool;
+public class APIHttpClientPool {
+	private static final Logger log = LoggerFactory.getLogger(APIHttpClientPool.class);
+	private volatile static APIHttpClientPool HttpClientConnectionPool;
 	//	public static final int MAX_TOTAL_CONNECTIONS = 50;
 //	public static final int MAX_ROUTE_CONNECTIONS = 20;
 //	public static final int CONNECT_TIMEOUT = 3000; // 连接时间
@@ -104,18 +104,18 @@ public class MyHttpClientPool {
 		}
 	}
 
-	private MyHttpClientPool(){}
+	private APIHttpClientPool(){}
 
 	/**
 	 * 获取MyHttpClientPool对象，这是单例方法
 	 *
 	 * @return
 	 */
-	public static MyHttpClientPool getClientConnectionPool() {
+	public static APIHttpClientPool getClientConnectionPool() {
 		if (HttpClientConnectionPool == null) {
-			synchronized (MyHttpClientPool.class) {
+			synchronized (APIHttpClientPool.class) {
 				if (HttpClientConnectionPool == null) {
-					HttpClientConnectionPool = new MyHttpClientPool();
+					HttpClientConnectionPool = new APIHttpClientPool();
 				}
 			}
 		}

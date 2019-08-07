@@ -3,6 +3,7 @@ package com.secusoft.web.service;
 import com.secusoft.web.model.ResultVo;
 import org.jose4j.lang.JoseException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
@@ -16,4 +17,6 @@ public interface SSOService {
   */
    //获取idToken
     void getIdToken(HttpSession session);
+    //向后置发送idToken
+    void sendIdToken(HttpServletRequest request);
 }
