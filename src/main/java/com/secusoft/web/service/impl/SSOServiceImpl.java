@@ -5,6 +5,7 @@ import com.secusoft.web.service.SSOService;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
@@ -18,6 +19,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -40,18 +42,22 @@ public class SSOServiceImpl implements SSOService {
     public void getIdToken(HttpSession session) {
         System.out.println("开始获取idToken");
         String posturl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18";
-        String redirecturi = "https://172.16.24.28:8105/spzn/getidtoken";
+        String redirecturi = "https://spzn.hzgaaqfwpt.hzs.zj/spzn/getidtoken";
         HttpGet getidtoken = null;
         try {
             //HttpClient有很多，可以根据个人喜好选用
             HttpClient httpClient = HttpClients.createDefault();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
-            getidtoken = new HttpGet(posturl+"?enterpriseId=police&redirect_uri="+redirecturi);
+            URIBuilder uriBuilder = new URIBuilder(posturl);
+            uriBuilder.addParameter("enterpriseId","police");
+            uriBuilder.addParameter("redirect_uri", redirecturi);
+            URI uri = uriBuilder.build();
+            getidtoken = new HttpGet(uri);
             // 构造消息头
             getidtoken.setHeader("Content-type", "application/json; charset=utf-8");
             // 发送http请求
             HttpResponse response = httpClient.execute(getidtoken);
-            //System.out.println("通过tap获取idtoken时响应信息:"+response);
+            System.out.println("通过TAP获取idToken时响应信息:" + response);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

@@ -12,10 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
+@Component
 public class UserAccessTokenFilter implements Filter {
 
-    //指纹生成
-    private FingerTookit fingerTookit;
     @Autowired
     private APIService apiService;
     @Autowired
@@ -34,9 +33,9 @@ public class UserAccessTokenFilter implements Filter {
         if(userAccessToken != null && userAccessToken.length() > 0) {
             //保存user_access_token供申请TIP令牌使用
             session.setAttribute("userAccessToken", userAccessToken);
-            System.out.println("tap访问令牌：" + userAccessToken);
+            System.out.println("TAP访问令牌：" + userAccessToken);
             //获取idToken
-            //ssoService.getIdToken(session);
+            ssoService.getIdToken(session);
             //发送请求获取tip token
             apiService.getTipAccessToken(session);
             //tipToken过期处理

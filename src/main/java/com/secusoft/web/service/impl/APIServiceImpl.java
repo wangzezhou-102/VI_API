@@ -53,12 +53,16 @@ import java.util.Map;
 
 @Service
 public class APIServiceImpl implements APIService {
+
     @Value("${spzn.appid}")
     private String appId;
+
     @Value("${spzn.appkey}")
     private String appKey;
+
     @Value("${tip.url}")
     private String tipUrl;
+
     @Value("${spzn.host}")
     private String spznHost;
     //token保存
@@ -156,7 +160,7 @@ public class APIServiceImpl implements APIService {
                 //获取tip_access_token
                 String access_token = (String) responseObj.get("access_token");
                 Integer expiresIn = (Integer) responseObj.get("expires_in");
-                String uid = (String) responseObj.get("uid");
+                //String uid = (String) responseObj.get("uid");
                 //保存过期时间
                 session.setAttribute("expiresIn", expiresIn);
                 //session.setAttribute("uid", uid);
@@ -179,7 +183,6 @@ public class APIServiceImpl implements APIService {
                 }
             }
         }
-        //TODO return err
         return null;
     }
     public static CloseableHttpClient createSSLClientDefault() {
@@ -273,6 +276,7 @@ public class APIServiceImpl implements APIService {
         System.out.println("请求图像资源开始：");
         HttpSession session = request.getSession();
         String tipAccessToken = (String) session.getAttribute("tipAccessToken");
+        String userAccessToken = (String)session.getAttribute("userAccessToken");
         //判断是否有令牌
         if (StringUtils.isEmpty(tipAccessToken)) {
             getTipAccessToken(session);
@@ -285,19 +289,21 @@ public class APIServiceImpl implements APIService {
             HttpClient httpClient = createSSLClientDefault();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
             URIBuilder uriBuilder = new URIBuilder("https://" + tipUrl + "/spzn/pic");
+            System.out.println("请求图像完整路径:    https://"+tipUrl+"/spzn/pic?" + picUrl);
             uriBuilder.addParameter("picUrl",picUrl);
             URI build = uriBuilder.build();
             get = new HttpGet(build);
             // 构造消息头
             get.addHeader("Content-type", "application/json; charset=utf-8");
             // 填入双令牌
-            //get.addHeader("X-trustuser-access-token", userAccessToken);
+            get.addHeader("X-trustuser-access-token", userAccessToken);
             get.addHeader("X-trustagw-access-token", tipAccessToken);
             get.addHeader("Host", spznHost);
             // 发送http请求
             HttpResponse response = httpClient.execute(get);
             int statusCode = response.getStatusLine().getStatusCode();
 			System.out.println("业务api对接返回数据：" + response );
+			System.out.println("返回状态码:"+statusCode);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

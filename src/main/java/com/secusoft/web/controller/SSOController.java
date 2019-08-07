@@ -10,6 +10,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
@@ -28,6 +29,7 @@ import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -61,7 +63,7 @@ public class SSOController {
         return ResponseUtil.handle(Constants.OK, userDetailInfo);
     }*/
     //获取id_token
-    @GetMapping("/getidtoken")
+    @GetMapping("/spzn/getidtoken")
     public ResponseEntity getIdToken(@RequestParam("id_token")String idToken,HttpSession session){
         System.out.println("从4A获取到的数据所有值为(从中获取id_token): "+idToken);
         session.setAttribute("idToken",idToken);
@@ -97,7 +99,10 @@ public class SSOController {
             HttpClient httpClient = createSSLClientDefault();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
             String idToken = (String)session.getAttribute("idToken");
-            get = new HttpGet("https://" + tipurl + "/spzn/receiveidtoken?idToken="+ idToken);
+            URIBuilder uriBuilder = new URIBuilder("https://" + tipurl + "/spzn/receiveidtoken");
+            uriBuilder.addParameter("idToken",idToken);
+            URI uri = uriBuilder.build();
+            get = new HttpGet(uri);
             System.out.println("向后置传递的idToken:" + idToken);
             // 构造消息头
             get.setHeader("Content-type", "application/json; charset=utf-8");
@@ -106,9 +111,6 @@ public class SSOController {
             get.setHeader("X-trustagw-access-token", tipAccessToken);
             get.setHeader("Host", spznHost);
             // 发送http请求
-            System.out.println("X-trustuser-access-token   "+userAccessToken);
-            System.out.println("X-trustagw-access-token    "+tipAccessToken);
-            System.out.println("Host:                      "+spznHost);
             HttpResponse response = httpClient.execute(get);
 //			System.out.println("业务api对接返回数据：" + response + " 返回实体：" + resultStr);
             System.out.println("后置发送返回状态信息:"+response);

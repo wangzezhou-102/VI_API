@@ -6,6 +6,7 @@ import com.secusoft.web.core.util.ResponseUtil;
 import com.secusoft.web.model.ResultVo;
 import com.secusoft.web.service.APIService;
 import org.apache.http.HttpEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 @RestController
 @CrossOrigin(value = "*", maxAge = 3600)
 public class APIController {
-    @Resource
+    @Autowired
     private APIService apiService;
     //获取tip访问令牌
     @PostMapping("/spzn/*")
@@ -32,6 +33,11 @@ public class APIController {
     }
     @GetMapping("/spzn/pic")
     public void requestImg(HttpServletRequest request, HttpServletResponse response){
+        apiService.requestAPI(request,response);
+    }
+
+    @GetMapping("/spzn/pic1")
+    public void requestImg1(HttpServletRequest request, HttpServletResponse response){
         apiService.requestAPIGET(request);
     }
 
