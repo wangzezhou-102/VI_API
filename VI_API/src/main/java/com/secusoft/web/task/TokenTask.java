@@ -1,6 +1,5 @@
 package com.secusoft.web.task;
 
-import com.secusoft.web.core.util.SpringContextHolder;
 import com.secusoft.web.service.APIService;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -14,7 +13,6 @@ import javax.servlet.http.HttpSession;
 
 /**
  * 重新获取tipToken定时任务
- *
  * @author wangzezhou
  * @since 2019/07/29
  */

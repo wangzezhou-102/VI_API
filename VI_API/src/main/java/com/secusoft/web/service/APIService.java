@@ -16,5 +16,7 @@ public interface APIService {
     ResultVo getTipAccessToken(HttpSession session);
     //重新获取TIP 访问令牌
     void requestTipToken(HttpSession session);
+    // 通过TIP得到后置访问图片
+    void requestImage(HttpServletRequest request, HttpServletResponse response);
    
 }

@@ -7,13 +7,12 @@ import com.secusoft.web.core.support.FingerTookit;
 import com.secusoft.web.core.util.StringUtils;
 import com.secusoft.web.model.ResultVo;
 import com.secusoft.web.service.SSOService;
-import com.secusoft.web.utils.MyHttpClientPool;
+import com.secusoft.web.util.MyHttpClientPool;
 import org.apache.http.entity.StringEntity;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashMap;
