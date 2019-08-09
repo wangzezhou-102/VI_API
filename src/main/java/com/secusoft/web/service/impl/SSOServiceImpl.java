@@ -1,25 +1,37 @@
 package com.secusoft.web.service.impl;
 
+import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
 import com.secusoft.web.core.support.FingerTookit;
+import com.secusoft.web.model.ResultVo;
 import com.secusoft.web.service.SSOService;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
+import org.hibernate.validator.internal.util.privilegedactions.GetMethod;
+import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -36,28 +48,28 @@ public class SSOServiceImpl implements SSOService {
     private String tipurl;
     @Value("${spzn.host}")
     private String spznHost;
-    private FingerTookit fingerTookit;
 
     //获取IdToken
     public void getIdToken(HttpSession session) {
         System.out.println("开始获取idToken");
         String posturl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18";
-        String redirecturi = "https://spzn.hzgaaqfwpt.hzs.zj/spzn/getidtoken";
+        String redirecturi = "https://spzn.hzgaaqfwpt.hzs.zj/getidtoken";
         HttpGet getidtoken = null;
         try {
+            String encode = URLEncoder.encode(redirecturi, "UTF-8");
             //HttpClient有很多，可以根据个人喜好选用
-            HttpClient httpClient = HttpClients.createDefault();
+            CloseableHttpClient httpClient = HttpClients.createDefault();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
             URIBuilder uriBuilder = new URIBuilder(posturl);
             uriBuilder.addParameter("enterpriseId","police");
-            uriBuilder.addParameter("redirect_uri", redirecturi);
+            uriBuilder.addParameter("redirect_uri", encode);
             URI uri = uriBuilder.build();
             getidtoken = new HttpGet(uri);
-            // 构造消息头
             getidtoken.setHeader("Content-type", "application/json; charset=utf-8");
             // 发送http请求
             HttpResponse response = httpClient.execute(getidtoken);
-            System.out.println("通过TAP获取idToken时响应信息:" + response);
+            int statusCode = response.getStatusLine().getStatusCode();
+            System.out.println("通过TAP获取idToken时状态码:  " + statusCode);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -71,7 +83,18 @@ public class SSOServiceImpl implements SSOService {
             }
         }
     }
-    //获取IdToken
+    //解析idToken
+    @Override
+    public DingdangUserRetriever.User resolveIdToken(String idToken) throws JoseException, IOException {
+        System.out.println("前置开始解析idToken...");
+        String publicKey = "{\"kty\":\"RSA\",\"kid\":\"1346614912326510837\",\"alg\":\"RS256\",\"n\":\"hOdf08cku1cEddGWHjOxalfqqmrMJ5LotXT28r0pgsw82uZiSNhi4kr1qVB7z3vUeqh0TffekWxsxGc0VXGoYrPYRkkS08old8CNZQjl7AbnY179kwPilburFuMXioYO55UgvXm2mpCBL8RKGiDSORlVXruBYhxGxZ8yAaloIPVZMTIBjhKtq_fc9K1fygjR7Q3BJJkDcLU92P1Jb8_EbpvRhkHzjKi-FcXbflPWY8dMQpksInp9c-AUByVvYQD3me94yVpyOcwVNUhT5sDUOHhbWjs0gkllY86GRqIHMpNk8VDI7BiXTny-etm7AGyU0_AJlwn4JcsERCqozH7n6w\",\"e\":\"AQAB\"}";
+        //解析id_token
+        DingdangUserRetriever retriever = new DingdangUserRetriever(idToken, publicKey);
+        DingdangUserRetriever.User token = retriever.retrieve();
+        System.out.println("前置解析成功!");
+        return token;
+    }
+    //向后置发送IdToken
     public void sendIdToken(HttpServletRequest request) {
         System.out.println("idToken往后置发送开始：");
         HttpSession session = request.getSession();
@@ -91,13 +114,8 @@ public class SSOServiceImpl implements SSOService {
             get.setHeader("X-trustuser-access-token", userAccessToken);
             get.setHeader("X-trustagw-access-token", tipAccessToken);
             get.setHeader("Host", spznHost);
-            // 发送http请求
-            System.out.println("X-trustuser-access-token   "+userAccessToken);
-            System.out.println("X-trustagw-access-token    "+tipAccessToken);
-            System.out.println("Host:                      "+spznHost);
             HttpResponse response = httpClient.execute(get);
-//			System.out.println("业务api对接返回数据：" + response + " 返回实体：" + resultStr);
-            System.out.println("发送返回状态信息:"+response);
+            System.out.println("向后置发送idToken返回状态码:" + response.getStatusLine().getStatusCode());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -135,20 +153,6 @@ public class SSOServiceImpl implements SSOService {
         }
         return HttpClients.createDefault();
     }
-   /* //判断用户登录
-    public ResultVo SSO(JSONObject jsonObject){
-        //TODO
-        //user_access_token(格式不确定,封装成bean,在session中获取进行判断)
-        return ResultVo.success();
-    }
-    //获取用户详细信息
-    public ResultVo getUserDetailInfo(HttpSession session)throws JoseException, IOException{
-        DingdangUserRetriever.User token = resolveIdToken(session);
-        System.out.println("IdToken信息");
-        System.out.println("token的uuid:"+token.getUdAccountUuid());
-        System.out.println("token的access_token:"+token.getAzp());
-        return null;
-    }*/
 
 
 }

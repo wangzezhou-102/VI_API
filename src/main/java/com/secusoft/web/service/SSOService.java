@@ -1,5 +1,6 @@
 package com.secusoft.web.service;
 
+import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
 import com.secusoft.web.model.ResultVo;
 import org.jose4j.lang.JoseException;
 
@@ -19,4 +20,6 @@ public interface SSOService {
     void getIdToken(HttpSession session);
     //向后置发送idToken
     void sendIdToken(HttpServletRequest request);
+    //解析idToken
+    DingdangUserRetriever.User resolveIdToken(String idToken)throws JoseException, IOException;
 }

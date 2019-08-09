@@ -125,6 +125,11 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/src/main/resources/lib/java-jwt-1.8.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>com.aliyun.api.gateway</groupId>
+            <artifactId>sdk-core-java</artifactId>
+            <version>1.0.4</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>vi_api</finalName>

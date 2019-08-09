@@ -26,6 +26,7 @@ public class FingerTookit {
 		//使用TreeMap，按key字典排序
 		TreeMap<String, Object> params = new TreeMap<String, Object>(json);
 		String queryStr = "";
+        params.put("app_id", this.appId);
 		params.put("app_key", this.appKey);
 		Iterator<String> itr = params.keySet().iterator();
 		while (itr.hasNext()) {

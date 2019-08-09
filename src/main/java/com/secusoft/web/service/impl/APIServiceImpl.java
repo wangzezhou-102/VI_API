@@ -111,7 +111,7 @@ public class APIServiceImpl implements APIService {
      * @return Map<String, Object> 返回信息
      */
     @Override
-    public ResultVo getTipAccessToken(HttpSession session) {
+    public void getTipAccessToken(HttpSession session) {
         System.out.println("获取tip访问令牌");
         String userAccessToken = (String) session.getAttribute("userAccessToken");
         //检查参数
@@ -147,7 +147,6 @@ public class APIServiceImpl implements APIService {
             entity.setContentType("application/json");
             post.setEntity(entity);
             HttpResponse response = httpClient.execute(post);
-            System.out.println("获取tip请求响应：" + response);
             // 检验http返回码
             int statusCode = response.getStatusLine().getStatusCode();
             //TIP返回201 (400 500 表示失败)
@@ -168,9 +167,9 @@ public class APIServiceImpl implements APIService {
                 session.setAttribute("tipAccessToken", access_token);
                 System.out.println("TIP访问令牌：" + access_token);
                 System.out.println("TIP过期时间:"+  expiresIn);
-                return ResultVo.success(responseObj);
+            }else{
+                System.out.println("tip令牌访问获取失败状态: " + statusCode);
             }
-            System.out.println("tip令牌访问获取失败状态: " + statusCode);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -183,8 +182,8 @@ public class APIServiceImpl implements APIService {
                 }
             }
         }
-        return null;
     }
+    //SSL 证书验证 用于https协议
     public static CloseableHttpClient createSSLClientDefault() {
         try {
             //使用 loadTrustMaterial() 方法实现一个信任策略，信任所有证书
@@ -269,41 +268,44 @@ public class APIServiceImpl implements APIService {
         return null;
     }
     /**
-     * 业务图像API对接
+     * 获取图片
      */
     @Override
-    public void requestAPIGET(HttpServletRequest request) {
+    public void requestImage(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("请求图像资源开始：");
         HttpSession session = request.getSession();
-        String tipAccessToken = (String) session.getAttribute("tipAccessToken");
-        String userAccessToken = (String)session.getAttribute("userAccessToken");
-        //判断是否有令牌
-        if (StringUtils.isEmpty(tipAccessToken)) {
-            getTipAccessToken(session);
-        }
-        HttpGet get = null;
+        String tipAccessToken = (String)session.getAttribute("tipAccessToken");
+        System.out.println("tiptoken："+tipAccessToken);
         String picUrl = null;
+        HttpGet get = null;
         try {
             picUrl = request.getQueryString();
+            URL url = new URL("https://"+tipUrl+"/spzn/pic?" + picUrl);
+            System.out.println("请求图像完整路径:    https://"+tipUrl+"/spzn/pic?" + picUrl);
             //HttpClient有很多，可以根据个人喜好选用
             HttpClient httpClient = createSSLClientDefault();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
-            URIBuilder uriBuilder = new URIBuilder("https://" + tipUrl + "/spzn/pic");
-            System.out.println("请求图像完整路径:    https://"+tipUrl+"/spzn/pic?" + picUrl);
-            uriBuilder.addParameter("picUrl",picUrl);
-            URI build = uriBuilder.build();
-            get = new HttpGet(build);
+            get = new HttpGet("https://"+tipUrl+"/spzn/pic?" + picUrl);
             // 构造消息头
-            get.addHeader("Content-type", "application/json; charset=utf-8");
+            get.setHeader("Content-type", "application/json; charset=utf-8");
             // 填入双令牌
-            get.addHeader("X-trustuser-access-token", userAccessToken);
-            get.addHeader("X-trustagw-access-token", tipAccessToken);
-            get.addHeader("Host", spznHost);
+            get.setHeader("X-trustagw-access-token", tipAccessToken);
+            get.setHeader("Host", spznHost);
             // 发送http请求
-            HttpResponse response = httpClient.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-			System.out.println("业务api对接返回数据：" + response );
-			System.out.println("返回状态码:"+statusCode);
+            HttpResponse response1 = httpClient.execute(get);
+            int statusCode = response1.getStatusLine().getStatusCode();
+            if(statusCode == 200){
+                HttpEntity ht = response1.getEntity();
+                InputStream inStream = ht.getContent();
+                byte data[] = readInputStream(inStream);
+                inStream.close();
+                //设置返回的文件类型
+                response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+                OutputStream os = response.getOutputStream();
+                os.write(data);
+                os.flush();
+                os.close();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -318,7 +320,7 @@ public class APIServiceImpl implements APIService {
         }
     }
     /**
-     * 获取图片
+     * 获取图片(暂无使用)
      */
     @Override
     public void requestAPI(HttpServletRequest request, HttpServletResponse response) {
@@ -330,7 +332,7 @@ public class APIServiceImpl implements APIService {
         try {
             picUrl = request.getQueryString();
             URL url = new URL("https://"+tipUrl+"/spzn/pic?" + picUrl);
-            System.out.println("请求图像完整路径:    https://"+tipUrl+"/spzn/pic?" + picUrl);
+            System.out.println("请求图像完整路径: https://"+tipUrl+"/spzn/pic?" + picUrl);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {

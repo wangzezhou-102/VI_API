@@ -31,14 +31,10 @@ public class APIController {
         ResultVo resultVo = apiService.requestAPI(jsonObject, request);
         return ResponseUtil.handle(Constants.OK, resultVo);
     }
+    //通过TIP 访问后置图像
     @GetMapping("/spzn/pic")
-    public void requestImg(HttpServletRequest request, HttpServletResponse response){
-        apiService.requestAPI(request,response);
-    }
-
-    @GetMapping("/spzn/pic1")
-    public void requestImg1(HttpServletRequest request, HttpServletResponse response){
-        apiService.requestAPIGET(request);
+    public void req(HttpServletRequest request, HttpServletResponse response){
+        apiService.requestImage(request,response);
     }
 
 }
