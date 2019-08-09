@@ -24,4 +24,5 @@ public class MainApplication extends WebMvcConfigurerAdapter {
         SpringApplication.run(MainApplication.class, args);
         logger.info("Application is success!");
     }
+
 }

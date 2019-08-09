@@ -130,6 +130,12 @@
             <artifactId>sdk-core-java</artifactId>
             <version>1.0.4</version>
         </dependency>
+        <!-- guava 20(18版本缺少方法) -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>20.0</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>vi_api</finalName>
