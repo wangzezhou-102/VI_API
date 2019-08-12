@@ -1,7 +1,9 @@
 package com.secusoft.web.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
 import com.secusoft.web.core.support.FingerTookit;
+import com.secusoft.web.core.util.StringUtils;
 import com.secusoft.web.model.ResultVo;
 import com.secusoft.web.service.SSOService;
 import org.apache.http.HttpEntity;
@@ -69,6 +71,8 @@ public class SSOServiceImpl implements SSOService {
             // 发送http请求
             HttpResponse response = httpClient.execute(getidtoken);
             int statusCode = response.getStatusLine().getStatusCode();
+            System.out.println("向后置发送idToken返回body:" + JSON.toJSONString(response.getEntity().getContent()));
+            System.out.println("  实体  "+ EntityUtils.toString(response.getEntity(),"utf-8"));
             System.out.println("通过TAP获取idToken时状态码:  " + statusCode);
         } catch (Exception e) {
             e.printStackTrace();
@@ -115,6 +119,8 @@ public class SSOServiceImpl implements SSOService {
             get.setHeader("X-trustagw-access-token", tipAccessToken);
             get.setHeader("Host", spznHost);
             HttpResponse response = httpClient.execute(get);
+            System.out.println("向后置发送idToken返回body:" + JSON.toJSONString(response.getEntity().getContent()));
+            System.out.println("  实体  "+ EntityUtils.toString(response.getEntity(),"utf-8"));
             System.out.println("向后置发送idToken返回状态码:" + response.getStatusLine().getStatusCode());
         } catch (Exception e) {
             e.printStackTrace();

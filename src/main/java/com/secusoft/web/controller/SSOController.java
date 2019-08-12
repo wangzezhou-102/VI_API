@@ -53,7 +53,8 @@ public class SSOController {
     private String spznHost;
     @Resource
     private SSOService ssoService;
-   @GetMapping("/getidtoken")//1级请求路径 用于获取(可获取user_access_token) id_token
+
+   @GetMapping("/getidtoken")// 1级请求路径 用于获取(可获取user_access_token) id_token
    public void getidToken(HttpServletRequest request){
        String id_token = request.getParameter("id_token");
        System.out.println("控制器中获取id_token:  " + id_token);
