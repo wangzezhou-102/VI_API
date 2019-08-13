@@ -229,8 +229,12 @@ public class APIServiceImpl implements APIService {
         try {
             //HttpClient有很多，可以根据个人喜好选用
             HttpClient httpClient = createSSLClientDefault();
+            String url = "https://" + tipUrl + requestURI;
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
-            post = new HttpPost("https://" + tipUrl + requestURI+"?"+queryString);
+            if ( StringUtils.isNotEmpty(queryString)) {
+                url = "?"+queryString;
+            }
+            post = new HttpPost(url);
             System.out.println("业务请求的完整路径： https://" + tipUrl + requestURI + "?" + queryString );
             // 构造消息头
             post.setHeader("Content-type", "application/json; charset=utf-8");

@@ -27,7 +27,7 @@ public class APIController {
     private APIService apiService;
     //获取tip访问令牌
     @RequestMapping("/spzn/*")
-    public ResponseEntity requestAPI(@RequestBody JSONObject jsonObject, HttpServletRequest request){
+    public ResponseEntity requestAPI(@RequestBody(required = false) JSONObject jsonObject, HttpServletRequest request){
         ResultVo resultVo = apiService.requestAPI(jsonObject, request);
         return ResponseUtil.handle(Constants.OK, resultVo);
     }
