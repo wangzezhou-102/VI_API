@@ -223,15 +223,15 @@ public class APIServiceImpl implements APIService {
         }
         HttpPost post = null;
         //处理请求路径
-        StringBuffer requestURL = request.getRequestURL();
-        System.out.println("请求全路径：" + requestURL);
-        int spzn = requestURL.indexOf("/spzn/");
-        String requesturl = requestURL.substring(spzn);
+        String requestURI = request.getRequestURI();
+        System.out.println("请求相对路径：" + requestURI);
+        String queryString = request.getQueryString();
         try {
             //HttpClient有很多，可以根据个人喜好选用
             HttpClient httpClient = createSSLClientDefault();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
-            post = new HttpPost("https://" + tipUrl + requesturl);
+            post = new HttpPost("https://" + tipUrl + requestURI+"?"+queryString);
+            System.out.println("业务请求的完整路径： https://" + tipUrl + requestURI + "?" + queryString );
             // 构造消息头
             post.setHeader("Content-type", "application/json; charset=utf-8");
             // 填入双令牌

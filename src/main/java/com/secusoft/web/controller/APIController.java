@@ -26,7 +26,7 @@ public class APIController {
     @Autowired
     private APIService apiService;
     //获取tip访问令牌
-    @PostMapping("/spzn/*")
+    @RequestMapping("/spzn/*")
     public ResponseEntity requestAPI(@RequestBody JSONObject jsonObject, HttpServletRequest request){
         ResultVo resultVo = apiService.requestAPI(jsonObject, request);
         return ResponseUtil.handle(Constants.OK, resultVo);
@@ -36,5 +36,6 @@ public class APIController {
     public void req(HttpServletRequest request, HttpServletResponse response){
         apiService.requestImage(request,response);
     }
+
 
 }

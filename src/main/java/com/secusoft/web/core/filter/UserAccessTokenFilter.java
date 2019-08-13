@@ -32,12 +32,13 @@ public class UserAccessTokenFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest)req;
         //获取user_access_token
         String user_access_token =  request.getParameter("user_access_token");
-        System.out.println("test user_access_token: " + user_access_token);
         //获取id_token
         String id_token = request.getParameter("id_token");
-        System.out.println("test id_token: " + id_token);
 
         HttpSession session = request.getSession();
+        //设置session 过期时间
+        session.setMaxInactiveInterval(8 * 3600);
+
         String userAccessToken = (String)session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
         if(StringUtils.isNotEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken)){ // tac首次请求转发到spzn 携带user_access_token
