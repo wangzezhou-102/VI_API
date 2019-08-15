@@ -228,7 +228,7 @@ public class APIServiceImpl implements APIService {
 			JSONArray array = JSONArray.parseArray(String.valueOf(param));
 			param = array;
 		}
-		System.out.println("业务请求发送开始：" + param);
+		System.out.println("业务请求发送开始：" );
 		HttpSession session = request.getSession();
 		String tipAccessToken = (String) session.getAttribute("tipAccessToken");
 		String userAccessToken = (String) session.getAttribute("userAccessToken");
