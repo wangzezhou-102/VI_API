@@ -235,7 +235,7 @@ public class APIServiceImpl implements APIService {
                 url = "?"+queryString;
             }
             post = new HttpPost(url);
-            System.out.println("业务请求的完整路径： https://" + tipUrl + requestURI + "?" + queryString );
+            System.out.println("业务请求的完整路径： " + url);
             // 构造消息头
             post.setHeader("Content-type", "application/json; charset=utf-8");
             // 填入双令牌

@@ -6,6 +6,7 @@ import com.secusoft.web.core.util.StringUtils;
 import com.secusoft.web.model.ResultVo;
 import com.secusoft.web.service.APIService;
 import com.secusoft.web.service.impl.APIServiceImpl;
+import org.apache.catalina.session.StandardSessionFacade;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -37,7 +38,7 @@ public class TipTokenTask {
     @Resource
     private APIService apiService;
 
-    private static  HttpSession session;
+    private static  HttpSession session ;
     //@Scheduled(cron="0/5 * * * * ?")
     public void syncGetTipToken() {
         log.info("重新获取tip访问令牌 start");
