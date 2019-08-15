@@ -13,7 +13,7 @@ public interface APIService {
     //业务API对接
     ResultVo requestAPI(JSONObject jsonObject, HttpServletRequest request);
     //获取图片
-    void requestAPI(HttpServletRequest request, HttpServletResponse response);
+    void requestAPIURL(HttpServletRequest request, HttpServletResponse response);
     //获取TIP 访问令牌
     void getTipAccessToken(HttpSession session);
     //重新获取TIP 访问令牌

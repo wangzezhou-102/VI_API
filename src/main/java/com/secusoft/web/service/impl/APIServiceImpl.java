@@ -327,7 +327,7 @@ public class APIServiceImpl implements APIService {
      * 获取图片(暂无使用)
      */
     @Override
-    public void requestAPI(HttpServletRequest request, HttpServletResponse response) {
+    public void requestAPIURL(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("请求图像资源开始：");
         HttpSession session = request.getSession();
         String tipAccessToken = (String)session.getAttribute("tipAccessToken");

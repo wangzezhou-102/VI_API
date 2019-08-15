@@ -71,8 +71,8 @@ public class SSOServiceImpl implements SSOService {
             // 发送http请求
             HttpResponse response = httpClient.execute(getidtoken);
             int statusCode = response.getStatusLine().getStatusCode();
-            System.out.println("向后置发送idToken返回body:" + JSON.toJSONString(response.getEntity().getContent()));
-            System.out.println("  实体  "+ EntityUtils.toString(response.getEntity(),"utf-8"));
+            //System.out.println("向后置发送idToken返回body:" + JSON.toJSONString(response.getEntity().getContent()));
+            //System.out.println("  实体  "+ EntityUtils.toString(response.getEntity(),"utf-8"));
             System.out.println("通过TAP获取idToken时状态码:  " + statusCode);
         } catch (Exception e) {
             e.printStackTrace();

@@ -36,12 +36,13 @@ public class TipTokenTask {
     private static final Logger log = LoggerFactory.getLogger(TipTokenTask.class);
     @Resource
     private APIService apiService;
-    @Resource
-    private HttpSession session;
-    @Scheduled(cron="* * 0/11 * * ?")
+
+    private static  HttpSession session;
+    //@Scheduled(cron="0/5 * * * * ?")
     public void syncGetTipToken() {
         log.info("重新获取tip访问令牌 start");
         apiService.getTipAccessToken(session);
         log.info("重新获取TIP访问令牌 end");
     }
+
 }
