@@ -1,5 +1,6 @@
 package com.secusoft.web.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.secusoft.web.core.common.Constants;
 import com.secusoft.web.core.util.ResponseUtil;
@@ -27,8 +28,8 @@ public class APIController {
     private APIService apiService;
     //获取tip访问令牌
     @RequestMapping("/spzn/*")
-    public ResponseEntity requestAPI(@RequestBody(required = false) JSONObject jsonObject, HttpServletRequest request){
-        ResultVo resultVo = apiService.requestAPI(jsonObject, request);
+    public ResponseEntity requestAPI(@RequestBody(required = false) Object param, HttpServletRequest request){
+        JSONObject resultVo = apiService.requestAPI(param, request);
         return ResponseUtil.handle(Constants.OK, resultVo);
     }
     //通过TIP 访问后置图像
