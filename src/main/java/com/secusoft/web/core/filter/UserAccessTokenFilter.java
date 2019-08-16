@@ -36,7 +36,7 @@ public class UserAccessTokenFilter implements Filter {
         String id_token = request.getParameter("id_token");
         HttpSession session = request.getSession();
         //设置session 过期时间
-        session.setMaxInactiveInterval(8 * 3600);
+        session.setMaxInactiveInterval(-1);
         //System.out.println("session 运行时类：" + session.getClass().getName());
         String userAccessToken = (String)session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
@@ -62,15 +62,16 @@ public class UserAccessTokenFilter implements Filter {
                 System.out.println("前置过滤器解析或得IDToken的用户名:" + resolveIdToken.getUsername());
                 System.out.println("idToken的过期时间:" + resolveIdToken.getExp());
                 //解析成功，id_token 符合标准，向后置去发送（保证tipToken 已经获取成功）
-                ssoService.sendIdToken(request);
+                 ssoService.sendIdToken(request);
+                //tipToken过期处理
+                 //apiService.reTipToken(session);
+                 System.out.println("过滤器中session信息: " + session.getId());
             } catch (JoseException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        //tipToken过期处理
-        //apiService.requestTipToken(session);
         chain.doFilter(req,resp);
     }
     @Override

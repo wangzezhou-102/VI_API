@@ -24,12 +24,12 @@ public class FilterController {
 //	public static final String INDEX_PATH =
 //			System.getProperty("user.dir") + File.separator + "resources" + File.separator + "index.html";
 
-    @RequestMapping("/jwzx")
+    @RequestMapping("/bkzx")
     public String szsk() {
         return "/index.html";
     }
 
-    @RequestMapping("/jwzx/**")
+    @RequestMapping("/bkzx/**")
     public String szsk1() {
         return "/index.html";
     }

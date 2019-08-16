@@ -2,6 +2,7 @@ package com.secusoft.web.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
+import com.secusoft.web.core.exception.BizExceptionEnum;
 import com.secusoft.web.core.support.FingerTookit;
 import com.secusoft.web.core.util.QuartzCronDateUtil;
 import com.secusoft.web.core.util.QuartzUtil;
@@ -46,10 +47,7 @@ import java.nio.charset.Charset;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class APIServiceImpl implements APIService {
@@ -71,10 +69,13 @@ public class APIServiceImpl implements APIService {
     private FingerTookit fingerTookit;
 
     //计算过期时间,重新获取tiptoken
-    public void requestTipToken(HttpSession session) {
-        int count = 1;
+    public void reTipToken(HttpSession session) {
+        String uuid = UUID.randomUUID().toString().replaceAll("-","");
+        String cron = "0/5 * * * * ?";
+        System.out.println("ApiServiceImpl中session 信息:" + session.getId());
+        QuartzUtil.addJob("tiptoken"+ uuid, TokenTask.class, cron, session);//添加任务
         //匹配时间
-        Calendar calendar = Calendar.getInstance();
+        /*Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         //提前过期时间获取tiptoken
         String dateCron = QuartzCronDateUtil.getDateCron(calendar.getTime());
@@ -101,9 +102,8 @@ public class APIServiceImpl implements APIService {
                 int i = dateCronBuffer.indexOf(" ");
                 dateCronBuffer.insert(i,"/"+ expiresIn);
             }
-        }
-        QuartzUtil.addJob("tiptoken"+ count,TokenTask.class,dateCronBuffer.toString(),session);//添加任务
-        count ++;
+        }*/
+
     }
     /**
      * 获取API访问令牌
@@ -212,7 +212,7 @@ public class APIServiceImpl implements APIService {
      * 业务API 对接
      */
     @Override
-    public ResultVo requestAPI(JSONObject jsonObject, HttpServletRequest request) {
+    public ResultVo requestAPI(Object param, HttpServletRequest request) {
         System.out.println("业务请求发送开始：");
         HttpSession session = request.getSession();
         String tipAccessToken = (String) session.getAttribute("tipAccessToken");
@@ -232,7 +232,7 @@ public class APIServiceImpl implements APIService {
             String url = "https://" + tipUrl + requestURI;
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
             if ( StringUtils.isNotEmpty(queryString)) {
-                url = "?"+queryString;
+                url = url + "?" + queryString;
             }
             post = new HttpPost(url);
             System.out.println("业务请求的完整路径： " + url);
@@ -243,7 +243,7 @@ public class APIServiceImpl implements APIService {
             post.setHeader("X-trustagw-access-token", tipAccessToken);
             post.setHeader("Host", spznHost);
             // 构建消息实体
-            StringEntity entity = new StringEntity(JSONObject.toJSONString(jsonObject), Charset.forName("UTF-8"));
+            StringEntity entity = new StringEntity(JSONObject.toJSONString(param), Charset.forName("UTF-8"));
             entity.setContentEncoding("UTF-8");
             // 发送Json格式的数据请求
             entity.setContentType("application/json");
@@ -269,7 +269,7 @@ public class APIServiceImpl implements APIService {
                 }
             }
         }
-        return null;
+        return ResultVo.failure(BizExceptionEnum.SERVER_ERROR);
     }
     /**
      * 获取图片

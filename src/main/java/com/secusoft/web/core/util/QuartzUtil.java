@@ -1,15 +1,19 @@
 package com.secusoft.web.core.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
 
+import javax.servlet.http.HttpSession;
+
 /**
  * @Description: 定时任务管理类
  * Created by wzz on 2019/7/17
  */
+@Slf4j
 public class QuartzUtil {
     private static SchedulerFactory gSchedulerFactory = new StdSchedulerFactory();
     private static String JOB_GROUP_NAME = "EXTJWEB_JOBGROUP_NAME";
@@ -30,10 +34,14 @@ public class QuartzUtil {
         try {
             Scheduler sched = gSchedulerFactory.getScheduler();
             JobDetail jobDetail = new JobDetail(jobName, JOB_GROUP_NAME, cls);// 任务名，任务组，任务执行类
-            jobDetail.getJobDataMap().put("params", params);
+            log.info("添加的定时任务名称: " + jobName);
+            jobDetail.getJobDataMap().put("params", (HttpSession)params);
+            System.out.println("任务调度器中session信息:" + ((HttpSession) params).getId());
             // 触发器
-            CronTrigger trigger = new CronTrigger(jobName+"Cron", TRIGGER_GROUP_NAME);// 触发器名,触发器组
+            CronTrigger trigger = new CronTrigger(jobName + "Cron", TRIGGER_GROUP_NAME);// 触发器名,触发器组
+            log.info("添加的触发器名称: " + jobName + "Cron");
             trigger.setCronExpression(time);// 触发器时间设定
+            //任务触发器绑定
             sched.scheduleJob(jobDetail, trigger);
             // 启动
             if (!sched.isShutdown()) {

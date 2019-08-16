@@ -2,6 +2,8 @@ package com.secusoft.web.task;
 
 import com.secusoft.web.core.util.SpringContextHolder;
 import com.secusoft.web.service.APIService;
+import com.secusoft.web.service.impl.APIServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -18,19 +20,20 @@ import javax.servlet.http.HttpSession;
  * @author wangzezhou
  * @since 2019/07/29
  */
+@Slf4j
 public class TokenTask implements Job {
-
-    private static Logger log = LoggerFactory.getLogger(TokenTask.class);
+    //private static Logger log = LoggerFactory.getLogger(TokenTask.class);
 
     public TokenTask(){}
-    @Resource
-    public APIService apiService;
+
+    public APIServiceImpl apiServiceImpl = new APIServiceImpl();
     @Override
     public void execute(JobExecutionContext jec) throws JobExecutionException {
-        JobDataMap patrolMap = jec.getJobDetail().getJobDataMap();
-        HttpSession session = (HttpSession) patrolMap.get("params");
-        log.info("获取新的tipToken：" );
-        apiService.getTipAccessToken(session);
-        log.info("获取tipToken成功：");
+        JobDataMap map = jec.getJobDetail().getJobDataMap();
+        HttpSession session = (HttpSession) map.get("params");
+        log.info("session信息 : " + session.getId());
+        log.info("获取新的tipToken..." );
+        apiServiceImpl.getTipAccessToken(session);
+        log.info("获取tipToken成功");
     }
 }

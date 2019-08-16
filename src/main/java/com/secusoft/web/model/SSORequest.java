@@ -1,6 +1,5 @@
 package com.secusoft.web.model;
 
-
 /**
  * 单点登录请求(OIDC协议)
  * @author wangzezhou

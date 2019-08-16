@@ -11,13 +11,13 @@ import javax.servlet.http.HttpSession;
 
 public interface APIService {
     //业务API对接
-    ResultVo requestAPI(JSONObject jsonObject, HttpServletRequest request);
+    ResultVo requestAPI(Object param, HttpServletRequest request);
     //获取图片
     void requestAPIURL(HttpServletRequest request, HttpServletResponse response);
     //获取TIP 访问令牌
     void getTipAccessToken(HttpSession session);
     //重新获取TIP 访问令牌
-    void requestTipToken(HttpSession session);
+    void reTipToken(HttpSession session);
     // 通过TIP得到后置访问图片
     void requestImage(HttpServletRequest request, HttpServletResponse response);
 }
