@@ -1,17 +1,16 @@
 package com.secusoft.web.core.filter;
 
 import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
-import com.secusoft.web.core.support.FingerTookit;
 import com.secusoft.web.core.util.StringUtils;
 import com.secusoft.web.service.APIService;
 import com.secusoft.web.service.SSOService;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
@@ -47,6 +46,14 @@ public class UserAccessTokenFilter implements Filter {
             ssoService.getIdToken(session);
             //发送请求获取tip token
             apiService.getTipAccessToken(session);
+        }
+        if(StringUtils.isEmpty(idToken)&&StringUtils.isEmpty(id_token)){
+            String redirectUrl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18?enterpriseId" +
+                    "=police&redirect_uri=https://spzn.hzgaaqfwpt.hzs.zj&user_access_token="+user_access_token;
+            System.out.println("重定向:" + redirectUrl);
+            HttpServletResponse response = (HttpServletResponse)resp;
+            response.sendRedirect(redirectUrl);
+            return;
         }
         if(StringUtils.isNotEmpty(id_token) && StringUtils.isEmpty(idToken)){
             session.setAttribute("idToken", id_token);
