@@ -29,7 +29,9 @@ public class UserAccessTokenFilter implements Filter {
     @Override
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest request = (HttpServletRequest)req;
-        //获取user_access_token
+	    HttpServletResponse response = (HttpServletResponse)resp;
+	
+	    //获取user_access_token
         String user_access_token =  request.getParameter("user_access_token");
         //获取id_token
         String id_token = request.getParameter("id_token");
@@ -39,6 +41,11 @@ public class UserAccessTokenFilter implements Filter {
         //System.out.println("session 运行时类：" + session.getClass().getName());
         String userAccessToken = (String)session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
+        String url = request.getRequestURI();
+        
+        if(StringUtils.isEmpty(user_access_token)&&StringUtils.isEmpty(userAccessToken)){
+            return;
+        }
         if(StringUtils.isNotEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken)){ // tac首次请求转发到spzn 携带user_access_token
             session.setAttribute("userAccessToken", user_access_token);
             System.out.println("过滤器中的user_access_token:" + user_access_token);
@@ -47,11 +54,11 @@ public class UserAccessTokenFilter implements Filter {
             //发送请求获取tip token
             apiService.getTipAccessToken(session);
         }
-        if(StringUtils.isEmpty(idToken)&&StringUtils.isEmpty(id_token)){
+        String userToken = StringUtils.isEmpty(user_access_token)?userAccessToken:user_access_token;
+        if(StringUtils.isEmpty(idToken)&&StringUtils.isEmpty(id_token)&&StringUtils.isNotEmpty(userToken)){
             String redirectUrl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18?enterpriseId" +
-                    "=police&redirect_uri=https://spzn.hzgaaqfwpt.hzs.zj&user_access_token="+user_access_token;
+                    "=police&redirect_uri="+request.getRequestURL()+"&user_access_token="+userToken;
             System.out.println("重定向:" + redirectUrl);
-            HttpServletResponse response = (HttpServletResponse)resp;
             response.sendRedirect(redirectUrl);
             return;
         }
