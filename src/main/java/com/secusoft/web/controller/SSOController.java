@@ -58,20 +58,6 @@ public class SSOController {
    public void getidToken(HttpServletRequest request){
        String id_token = request.getParameter("id_token");
        System.out.println("控制器中获取id_token:  " + id_token);
-       /*HttpSession session = request.getSession();
-       String idToken = (String)session.getAttribute("idToken");
-       if(StringUtils.isNotEmpty(id_token) && StringUtils.isEmpty(idToken)){ // 4A首次验证用户信息通过, 前置未登录, 重定向到spzn 携带id_token
-           session.setAttribute("idToken", id_token);
-           System.out.println("控制器中在4A获取的id_token:" + idToken);
-           //此处向后置发送idToken, 需要保證以獲取TipToken,先获取TipToken(未执行)
-           try {
-               //保存解析的idToken信息
-               DingdangUserRetriever.User resolveIdToken = ssoService.resolveIdToken(id_token);
-               session.setAttribute("resolveIdToken", resolveIdToken);
-           } catch (Exception e) {
-               e.printStackTrace();
-           }
-       }*/
    }
 
     public void getUserInfo(String uuid,String access_token) {

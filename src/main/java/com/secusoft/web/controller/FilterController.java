@@ -22,7 +22,7 @@ public class FilterController {
     private APIService apiService;
 
 //	public static final String INDEX_PATH =
-//			System.getProperty("user.dir") + File.separator + "resources" + File.separator + "index.html";
+//	System.getProperty("user.dir") + File.separator + "resources" + File.separator + "index.html";
 
     @RequestMapping("/bkzx")
     public String szsk() {
