@@ -1,5 +1,6 @@
 package com.secusoft.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -14,15 +15,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  *
  * @Date 2019/7/26 12:06
  */
+@Slf4j
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 @EnableScheduling
-public class MainApplication extends WebMvcConfigurerAdapter {
-
-    protected final static Logger logger = LoggerFactory.getLogger(MainApplication.class);
+public class MainApplication{
 
     public static void main(String[] args) {
         SpringApplication.run(MainApplication.class, args);
-        logger.info("Application is success!");
+        log.info("Application is success!");
     }
 
 }

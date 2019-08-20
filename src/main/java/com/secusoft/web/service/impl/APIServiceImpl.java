@@ -49,14 +49,15 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
 
+@Slf4j
 @Service
 public class APIServiceImpl implements APIService {
-
+    //quartz 目前存在问题
     @Value("${spzn.appid}")
-    private String appId;
+    private String appId = "aba0fd";
 
     @Value("${spzn.appkey}")
-    private String appKey;
+    private String appKey = "dcfc5eb12db7f91a";
 
     @Value("${tip.url}")
     private String tipUrl;
@@ -70,10 +71,12 @@ public class APIServiceImpl implements APIService {
 
     //计算过期时间,重新获取tiptoken
     public void reTipToken(HttpSession session) {
-        String uuid = UUID.randomUUID().toString().replaceAll("-","");
-        String cron = "0/5 * * * * ?";
-        System.out.println("ApiServiceImpl中session 信息:" + session.getId());
-        QuartzUtil.addJob("tiptoken"+ uuid, TokenTask.class, cron, session);//添加任务
+        synchronized (session) {
+            String uuid = UUID.randomUUID().toString().replaceAll("-","");
+            String cron = "0/5 * * * * ?";
+            log.info("ApiServiceImpl中session 信息: {}" ,session.getId());
+            QuartzUtil.addJob("tiptoken"+ uuid, TokenTask.class, cron, session);//添加任务
+        }
         //匹配时间
         /*Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
@@ -103,7 +106,6 @@ public class APIServiceImpl implements APIService {
                 dateCronBuffer.insert(i,"/"+ expiresIn);
             }
         }*/
-
     }
     /**
      * 获取API访问令牌
@@ -112,7 +114,7 @@ public class APIServiceImpl implements APIService {
      */
     @Override
     public void getTipAccessToken(HttpSession session) {
-        System.out.println("获取tip访问令牌");
+        log.info("获取TIP访问令牌");
         String userAccessToken = (String) session.getAttribute("userAccessToken");
         //检查参数
         if (StringUtils.isEmpty(userAccessToken)) {
@@ -128,7 +130,8 @@ public class APIServiceImpl implements APIService {
             jobj.put("mid", mid);
         }*/
         //生成指纹
-        fingerTookit = new FingerTookit(appId, appKey);
+        fingerTookit = new FingerTookit();
+        log.info("api中jobj:{}",jobj);
         String fingerprint = fingerTookit.buildFingerprint(jobj);
         jobj.put("fingerprint", fingerprint);
         System.out.println("获取tip传参:" + jobj.toString());
@@ -207,13 +210,12 @@ public class APIServiceImpl implements APIService {
         }
         return HttpClients.createDefault();
     }
-
     /**
      * 业务API 对接
      */
     @Override
     public ResultVo requestAPI(Object param, HttpServletRequest request) {
-        System.out.println("业务请求发送开始：");
+        log.info("业务请求发送开始...");
         HttpSession session = request.getSession();
         String tipAccessToken = (String) session.getAttribute("tipAccessToken");
         String userAccessToken = (String) session.getAttribute("userAccessToken");
@@ -224,7 +226,7 @@ public class APIServiceImpl implements APIService {
         HttpPost post = null;
         //处理请求路径
         String requestURI = request.getRequestURI();
-        System.out.println("请求相对路径：" + requestURI);
+        log.info("请求相对路径： {}", requestURI);
         String queryString = request.getQueryString();
         try {
             //HttpClient有很多，可以根据个人喜好选用
@@ -235,7 +237,7 @@ public class APIServiceImpl implements APIService {
                 url = url + "?" + queryString;
             }
             post = new HttpPost(url);
-            System.out.println("业务请求的完整路径： " + url);
+            log.info("业务请求的完整路径： {}" , url);
             // 构造消息头
             post.setHeader("Content-type", "application/json; charset=utf-8");
             // 填入双令牌
@@ -253,7 +255,6 @@ public class APIServiceImpl implements APIService {
             int statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity1 = response.getEntity();
             String resultStr = EntityUtils.toString(entity1);
-//			System.out.println("业务api对接返回数据：" + response + " 返回实体：" + resultStr);
             ResultVo result = JSONObject.parseObject(resultStr, ResultVo.class);
             //返回结果
             return result;
@@ -276,20 +277,23 @@ public class APIServiceImpl implements APIService {
      */
     @Override
     public void requestImage(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("请求图像资源开始：");
+        log.info("请求图像资源开始...");
         HttpSession session = request.getSession();
         String tipAccessToken = (String)session.getAttribute("tipAccessToken");
-        System.out.println("tiptoken："+tipAccessToken);
-        String picUrl = null;
+        log.info("tiptoken："+tipAccessToken);
         HttpGet get = null;
+        String url = "https://" + tipUrl + "/spzn/pic";
+        String picUrl = null;
         try {
             picUrl = request.getQueryString();
-            URL url = new URL("https://"+tipUrl+"/spzn/pic?" + picUrl);
-            System.out.println("请求图像完整路径:    https://"+tipUrl+"/spzn/pic?" + picUrl);
+            if(StringUtils.isNotEmpty(picUrl)) {
+                url += "?" + picUrl;
+            }
+            log.info("请求图像完整路径:    {}",url);
             //HttpClient有很多，可以根据个人喜好选用
             HttpClient httpClient = createSSLClientDefault();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
-            get = new HttpGet("https://"+tipUrl+"/spzn/pic?" + picUrl);
+            get = new HttpGet(url);
             // 构造消息头
             get.setHeader("Content-type", "application/json; charset=utf-8");
             // 填入双令牌

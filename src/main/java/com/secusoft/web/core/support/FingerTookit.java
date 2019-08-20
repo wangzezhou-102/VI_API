@@ -1,6 +1,7 @@
 package com.secusoft.web.core.support;
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Encoder;
 
@@ -9,14 +10,16 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+@Slf4j
 public class FingerTookit {
 	//应用信息
-    private String appId;
-    private String appKey;
-    public FingerTookit(String appId,String appKey){
+    private String appId = "aba0fd";
+    private String appKey = "dcfc5eb12db7f91a";
+
+    /*public FingerTookit(String appId,String appKey){
     	 this.appId = appId;
          this.appKey = appKey;
-    }
+    }*/
 	/**
 	 * 生成指纹
 	 * @param json
@@ -25,19 +28,22 @@ public class FingerTookit {
 	public String buildFingerprint(JSONObject json) {
 		//使用TreeMap，按key字典排序
 		TreeMap<String, Object> params = new TreeMap<String, Object>(json);
-		String queryStr = "";
+		log.info("无key 中的json: {}",json);
+		StringBuffer queryStr = new StringBuffer("");
         params.put("app_id", this.appId);
 		params.put("app_key", this.appKey);
+		log.info("Fingerprint中: {}", params);
 		Iterator<String> itr = params.keySet().iterator();
 		while (itr.hasNext()) {
 			String key = itr.next();
 			if (!key.equals("fingerprint")) {
-				queryStr += (key + "=" + params.get(key).toString() + "&");
+				//queryStr += (key + "=" + params.get(key).toString() + "&");
+				queryStr.append(key + "=" +params.get(key).toString() + "&");
 			}
 		}
 		//去掉最后多余&
-		queryStr = queryStr.substring(0, queryStr.length() - 1);
-		String fingerprint = SHA1(queryStr);//转base64
+		String substring = queryStr.substring(0, queryStr.length() - 1);
+		String fingerprint = SHA1(substring);//转base64
 		return fingerprint;
 	}
 	
@@ -54,7 +60,7 @@ public class FingerTookit {
 		}
 		String genFingerprint = buildFingerprint(json);
 		if (!fingerprint.equals(genFingerprint)) {
-			System.out.println("fingerprint=" + fingerprint + "  genFingerprint="+genFingerprint);
+			log.info("fingerprint=" + fingerprint + "  genFingerprint="+genFingerprint);
 			return false;
 		}
 		return true;
