@@ -14,19 +14,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.URLEncoder;
 
 @Slf4j
 @Component
 public class UserAccessTokenFilter implements Filter {
-
+    
     @Autowired
     private APIService apiService;
     @Autowired
     private SSOService ssoService;
-
+    
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("tokenfilter init");
+	    log.info("tokenfilter init");
     }
     @Override
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws ServletException, IOException {
@@ -40,37 +41,47 @@ public class UserAccessTokenFilter implements Filter {
         session.setMaxInactiveInterval(-1);
         String userAccessToken = (String)session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
+        if(StringUtils.isEmpty(user_access_token)&&StringUtils.isEmpty(userAccessToken)){
+            return;
+        }
         if(StringUtils.isNotEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken)){ // tac首次请求转发到spzn 携带user_access_token
             session.setAttribute("userAccessToken", user_access_token);
-            log.info("过滤器中的user_access_token:" + user_access_token);
+	        log.info("过滤器中的user_access_token:" + user_access_token);
             //发送请求获取tip token
             apiService.getTipAccessToken(session);
         }
-        if(StringUtils.isEmpty(idToken) && StringUtils.isEmpty(id_token)){
-            String redirectUrl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18?" +
-                    "enterpriseId=police&redirect_uri=https://spzn.hzgaaqfwpt.hzs.zj&user_access_token="+user_access_token;
-            log.info("重定向:" + redirectUrl);
-            HttpServletResponse response = (HttpServletResponse)resp;
+        String userToken = StringUtils.isEmpty(user_access_token)?userAccessToken:user_access_token;
+        if(StringUtils.isEmpty(idToken)&&StringUtils.isEmpty(id_token)&&StringUtils.isNotEmpty(userToken)){
+            StringBuffer requestPath = request.getRequestURL();
+            String queryStr = request.getQueryString();
+            if(StringUtils.isNotEmpty(queryStr)){
+                queryStr = URLEncoder.encode(queryStr, "UTF-8");
+                requestPath.append("?").append(queryStr);
+            }
+	        HttpServletResponse response = (HttpServletResponse)resp;
+	        String redirectUrl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18?enterpriseId" +
+                    "=police&redirect_uri="+requestPath+"&user_access_token="+userToken;
+	        log.info("重定向:" + redirectUrl);
             response.sendRedirect(redirectUrl);
             return;
         }
         if(StringUtils.isNotEmpty(id_token) && StringUtils.isEmpty(idToken)){
             session.setAttribute("idToken", id_token);
-            log.info("过滤器中的id_token: " + id_token);
+	        log.info("过滤器中的id_token: " + id_token);
             //保存解析后的idToken
             try {
                 DingdangUserRetriever.User resolveIdToken = ssoService.resolveIdToken(id_token);
                 session.setAttribute("resolveIdToken", resolveIdToken);
                 String uuid = resolveIdToken.getUdAccountUuid();
                 String access_token = resolveIdToken.getAzp();
-                log.info("前置过滤器解析获得idToken的uuid: {}", uuid );
-                log.info("前置过滤器解析获得idToken的access_token: {}", access_token );
-                log.info("前置过滤器解析或得IDToken的用户名: {}" , resolveIdToken.getUsername());
+	            log.info("前置过滤器解析获得idToken的uuid:" + uuid);
+	            log.info("前置过滤器解析获得idToken的access_token:" + access_token );
+	            log.info("前置过滤器解析或得IDToken的用户名:" + resolveIdToken.getUsername());
                 //解析成功，id_token 符合标准，向后置去发送（保证tipToken 已经获取成功）
                 ssoService.sendIdToken(request);
                 //tipToken过期处理
                 //apiService.reTipToken(session);
-                log.info("过滤器中session信息: " + session.getId());
+	            log.info("过滤器中session信息: " + session.getId());
             } catch (JoseException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -81,7 +92,7 @@ public class UserAccessTokenFilter implements Filter {
     }
     @Override
     public void destroy() {
-        System.out.println("tokenfilter destroy");
+	    log.info("tokenfilter destroy");
     }
-
+    
 }
