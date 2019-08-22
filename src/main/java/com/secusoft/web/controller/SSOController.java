@@ -60,6 +60,11 @@ public class SSOController {
    public void getidToken(HttpServletRequest request){
        String id_token = request.getParameter("id_token");
        log.info("控制器中获取id_token:  " + id_token);
-   }
 
+   }
+   @GetMapping("/staticreqtiptoken")
+    public String staticGetTipToken(HttpSession session) {
+       String tipAccessToken = (String)session.getAttribute("tipAccessToken");
+       return tipAccessToken;
+   }
 }
