@@ -1,6 +1,5 @@
 package com.secusoft.web.service.impl;
 
-import com.alibaba.cloudapi.sdk.core.model.ApiResponse;
 import com.alibaba.fastjson.JSONObject;
 import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
 import com.secusoft.web.core.exception.BizExceptionEnum;
@@ -12,18 +11,10 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -54,8 +45,20 @@ public class UserInfoServiceImpl implements UserInfoService {
             int statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity1 = response.getEntity();
             String resultStr = EntityUtils.toString(entity1);
-            //返回结果
-            return ResultVo.success(resultStr);
+            if(StringUtils.isEmpty(resultStr)){
+                return ResultVo.failure(BizExceptionEnum.SERVER_ERROR);
+            }
+            JSONObject resultJson = JSONObject.parseObject(resultStr);
+            if((boolean)resultJson.get("success")){
+                //返回结果
+                JSONObject data = resultJson.getJSONObject("data");
+                ResultVo result = new ResultVo();
+                result.setData(data.getJSONObject("basicInformation"));
+                return result;
+    
+            }else{
+                return ResultVo.failure(BizExceptionEnum.ACCOUNT_ERROR);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
