@@ -45,12 +45,10 @@ public class UserInfoServiceImpl implements UserInfoService {
             //HttpClient有很多，可以根据个人喜好选用
             HttpClient httpClient = HttpClients.createDefault();
             String geturl = "http://" + tipHost +"/api/bff/v1/user/detail/" + resolveIdToken.getUdAccountUuid() +
-                    "?Access_token=" + resolveIdToken.getAzp();
+                    "?access_token=" + resolveIdToken.getAzp();
             //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
             get = new HttpGet(geturl);
-            log.info("业务请求的完整路径： {}" , geturl);
-            // 构造消息头
-            get.setHeader("Content-type", "application/json; charset=utf-8");
+            log.info("请求用户信息的完整路径： {}" , geturl);
             // 发送http请求
             HttpResponse response = httpClient.execute(get);
             int statusCode = response.getStatusLine().getStatusCode();

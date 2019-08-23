@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.URLEncoder;
 
 @Slf4j
 @Component
@@ -31,7 +32,7 @@ public class UserAccessTokenFilter implements Filter {
     @Override
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest request = (HttpServletRequest)req;
-        //获取user_access_token
+	    //获取user_access_token
         String user_access_token =  request.getParameter("user_access_token");
         //获取id_token
         String id_token = request.getParameter("id_token");
@@ -40,7 +41,7 @@ public class UserAccessTokenFilter implements Filter {
         session.setMaxInactiveInterval(-1);
         String userAccessToken = (String)session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
-        if(StringUtils.isEmpty(user_access_token)&&StringUtils.isEmpty(userAccessToken)){
+        if(StringUtils.isEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken)){
             return;
         }
         if(StringUtils.isNotEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken)){ // tac首次请求转发到spzn 携带user_access_token

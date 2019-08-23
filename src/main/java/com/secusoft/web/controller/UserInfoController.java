@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -19,10 +20,10 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 
 /**
- * 过滤器
+ * 用户相关信息
  *
  * @author wangzezhou
- * @date 2019-07-25
+ * @date 2019-08-22
  */
 @Controller
 @CrossOrigin(value = "*", maxAge = 3600)
@@ -31,7 +32,7 @@ public class UserInfoController {
     @Resource
     private UserInfoService userInfoService;
 
-    @PostMapping("/getuserdetailinfo")
+    @GetMapping("/getuserdetailinfo")
     public ResponseEntity getUserDetailInfo(HttpServletRequest request) {
         HttpSession session = request.getSession();
         DingdangUserRetriever.User resolveIdToken = (DingdangUserRetriever.User) session.getAttribute("resolveIdToken");
