@@ -214,6 +214,7 @@ public class APIServiceImpl implements APIService {
         HttpSession session = request.getSession();
         Cookie[] cookies = request.getCookies();
         log.info("cookies: ", cookies.toString());
+        log.info("api 中的session: {}",session.getId());
         String tipAccessToken = (String) session.getAttribute("tipAccessToken");
         String userAccessToken = (String) session.getAttribute("userAccessToken");
         //判断是否有令牌
