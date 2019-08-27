@@ -29,6 +29,7 @@ public class APIController {
     //获取tip访问令牌
     @RequestMapping("/spzn/*")
     public ResponseEntity requestAPI(@RequestBody(required = false) Object param, HttpServletRequest request){
+        System.out.println(123);
         ResultVo resultVo = apiService.requestAPI(param, request);
         return ResponseUtil.handle(Constants.OK, resultVo);
     }
@@ -36,6 +37,12 @@ public class APIController {
     @GetMapping("/spzn/pic")
     public void req(HttpServletRequest request, HttpServletResponse response){
         apiService.requestImage(request,response);
+    }
+    
+    //通过TIP 访问后置文件
+    @GetMapping("/spzn/file")
+    public void reqfile(HttpServletRequest request, HttpServletResponse response){
+        apiService.requestFile(request,response);
     }
 
 }

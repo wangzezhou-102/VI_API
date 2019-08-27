@@ -20,4 +20,6 @@ public interface APIService {
     void reTipToken(HttpSession session);
     // 通过TIP得到后置访问图片
     void requestImage(HttpServletRequest request, HttpServletResponse response);
+    // 通过TIP得到后置文件
+    void requestFile(HttpServletRequest request, HttpServletResponse response);
 }

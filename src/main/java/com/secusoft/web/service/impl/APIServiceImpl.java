@@ -462,5 +462,60 @@ public class APIServiceImpl implements APIService {
         }
         return outStream.toByteArray();
     }
-
+    
+    /**
+     * 获取图片
+     */
+    @Override
+    public void requestFile(HttpServletRequest request, HttpServletResponse response) {
+        log.info("请求图像资源开始...");
+        HttpSession session = request.getSession();
+        String tipAccessToken = (String)session.getAttribute("tipAccessToken");
+        log.info("tiptoken："+tipAccessToken);
+        HttpGet get = null;
+        String url = "https://" + tipUrl + "/spzn/file";
+        String picUrl = null;
+        try {
+            picUrl = request.getQueryString();
+            if(StringUtils.isNotEmpty(picUrl)) {
+                url += "?" + picUrl;
+            }
+            log.info("请求图像完整路径:    {}",url);
+            //HttpClient有很多，可以根据个人喜好选用
+            HttpClient httpClient = createSSLClientDefault();
+            //根据http实际方法，构造HttpPost，HttpGet，HttpPut等
+            get = new HttpGet(url);
+            // 构造消息头
+            get.setHeader("Content-type", "application/json; charset=utf-8");
+            // 填入双令牌
+            get.setHeader("X-trustagw-access-token", tipAccessToken);
+            get.setHeader("Host", spznHost);
+            // 发送http请求
+            HttpResponse response1 = httpClient.execute(get);
+            int statusCode = response1.getStatusLine().getStatusCode();
+            if(statusCode == 200){
+                HttpEntity ht = response1.getEntity();
+                InputStream inStream = ht.getContent();
+                byte data[] = readInputStream(inStream);
+                inStream.close();
+                //设置返回的文件类型
+                response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+                OutputStream os = response.getOutputStream();
+                os.write(data);
+                os.flush();
+                os.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (get != null) {
+                try {//断开链接
+                    get.releaseConnection();
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }
