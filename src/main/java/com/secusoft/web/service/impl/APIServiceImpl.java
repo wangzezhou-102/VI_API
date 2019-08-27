@@ -474,11 +474,11 @@ public class APIServiceImpl implements APIService {
         log.info("tiptoken："+tipAccessToken);
         HttpGet get = null;
         String url = "https://" + tipUrl + "/spzn/file";
-        String picUrl = null;
+        String fileUrl = null;
         try {
-            picUrl = request.getQueryString();
-            if(StringUtils.isNotEmpty(picUrl)) {
-                url += "?" + picUrl;
+	        fileUrl = request.getQueryString();
+            if(StringUtils.isNotEmpty(fileUrl)) {
+                url += "?" + fileUrl;
             }
             log.info("请求图像完整路径:    {}",url);
             //HttpClient有很多，可以根据个人喜好选用
