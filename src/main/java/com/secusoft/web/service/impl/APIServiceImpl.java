@@ -1,10 +1,8 @@
 package com.secusoft.web.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
 import com.secusoft.web.core.exception.BizExceptionEnum;
 import com.secusoft.web.core.support.FingerTookit;
-import com.secusoft.web.core.util.QuartzCronDateUtil;
 import com.secusoft.web.core.util.QuartzUtil;
 import com.secusoft.web.core.util.StringUtils;
 import com.secusoft.web.model.ResultVo;
@@ -17,7 +15,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
@@ -26,15 +23,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
-import org.hibernate.validator.internal.util.privilegedactions.GetMethod;
-import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.*;
-import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -217,6 +212,8 @@ public class APIServiceImpl implements APIService {
     public ResultVo requestAPI(Object param, HttpServletRequest request) {
         log.info("业务请求发送开始...");
         HttpSession session = request.getSession();
+        Cookie[] cookies = request.getCookies();
+        log.info("cookies: ", cookies.toString());
         String tipAccessToken = (String) session.getAttribute("tipAccessToken");
         String userAccessToken = (String) session.getAttribute("userAccessToken");
         //判断是否有令牌
@@ -244,6 +241,8 @@ public class APIServiceImpl implements APIService {
             post.setHeader("X-trustuser-access-token", userAccessToken);
             post.setHeader("X-trustagw-access-token", tipAccessToken);
             post.setHeader("Host", spznHost);
+            post.setHeader("cookie",cookies.toString());
+            //post.setHeader("cookie",);
             // 构建消息实体
             StringEntity entity = new StringEntity(JSONObject.toJSONString(param), Charset.forName("UTF-8"));
             entity.setContentEncoding("UTF-8");
