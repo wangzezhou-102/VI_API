@@ -29,7 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.*;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -50,6 +49,11 @@ public class APIServiceImpl implements APIService {
     //quartz 目前存在问题
     @Value("${spzn.appid}")
     private String appId = "aba0fd";
+
+    @Value("${kh.appid}")
+    private String appIdKH = "348d39";
+    @Value("${kh.appkey}")
+    private String appKeyKH = "0d6f8a0a7763dbfb";
 
     @Value("${spzn.appkey}")
     private String appKey = "dcfc5eb12db7f91a";
@@ -129,7 +133,7 @@ public class APIServiceImpl implements APIService {
         log.info("api中jobj:{}",jobj);
         String fingerprint = fingerTookit.buildFingerprint(jobj);
         jobj.put("fingerprint", fingerprint);
-        System.out.println("获取tip传参:" + jobj.toString());
+        log.info("获取tip传参:" + jobj.toString());
         //发送请求
         HttpPost post = null;
         try {
@@ -163,10 +167,10 @@ public class APIServiceImpl implements APIService {
                 //session.setAttribute("uid", uid);
                 //保存tip_access_token
                 session.setAttribute("tipAccessToken", access_token);
-                System.out.println("TIP访问令牌：" + access_token);
-                System.out.println("TIP过期时间:"+  expiresIn);
-            }else{
-                System.out.println("tip令牌访问获取失败状态: " + statusCode);
+                log.info("TIP访问令牌：" + access_token);
+                log.info("TIP过期时间:"+  expiresIn);
+            } else {
+                log.info("tip令牌访问获取失败状态: " + statusCode);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -181,6 +185,7 @@ public class APIServiceImpl implements APIService {
             }
         }
     }
+
     //SSL 证书验证 用于https协议
     public static CloseableHttpClient createSSLClientDefault() {
         try {
@@ -212,11 +217,10 @@ public class APIServiceImpl implements APIService {
     public ResultVo requestAPI(Object param, HttpServletRequest request) {
         log.info("业务请求发送开始...");
         HttpSession session = request.getSession();
-        Cookie[] cookies = request.getCookies();
-        log.info("cookies: ", cookies.toString());
-        log.info("api 中的session: {}",session.getId());
+        log.info("requestApi 中的session: {}",session.getId());
         String tipAccessToken = (String) session.getAttribute("tipAccessToken");
         String userAccessToken = (String) session.getAttribute("userAccessToken");
+        String idToken = (String)session.getAttribute("idToken");
         //判断是否有令牌
         if (StringUtils.isEmpty(tipAccessToken) || StringUtils.isEmpty(userAccessToken)) {
             getTipAccessToken(session);
@@ -242,7 +246,7 @@ public class APIServiceImpl implements APIService {
             post.setHeader("X-trustuser-access-token", userAccessToken);
             post.setHeader("X-trustagw-access-token", tipAccessToken);
             post.setHeader("Host", spznHost);
-            post.setHeader("cookie",cookies.toString());
+            post.setHeader("idToken", idToken);
             //post.setHeader("cookie",);
             // 构建消息实体
             StringEntity entity = new StringEntity(JSONObject.toJSONString(param), Charset.forName("UTF-8"));
@@ -280,7 +284,7 @@ public class APIServiceImpl implements APIService {
         log.info("请求图像资源开始...");
         HttpSession session = request.getSession();
         String tipAccessToken = (String)session.getAttribute("tipAccessToken");
-        log.info("tiptoken："+tipAccessToken);
+        log.info("tiptoken：" + tipAccessToken);
         HttpGet get = null;
         String url = "https://" + tipUrl + "/spzn/pic";
         String picUrl = null;
