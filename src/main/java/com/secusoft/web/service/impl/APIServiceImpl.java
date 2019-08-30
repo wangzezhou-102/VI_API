@@ -48,19 +48,11 @@ import java.util.*;
 public class APIServiceImpl implements APIService {
     //quartz 目前存在问题
     @Value("${spzn.appid}")
-    private String appId = "aba0fd";
-
-    @Value("${kh.appid}")
-    private String appIdKH = "348d39";
-    @Value("${kh.appkey}")
-    private String appKeyKH = "0d6f8a0a7763dbfb";
-
+    private String appId;
     @Value("${spzn.appkey}")
-    private String appKey = "dcfc5eb12db7f91a";
-
+    private String appKey ;
     @Value("${tip.url}")
     private String tipUrl;
-
     @Value("${spzn.host}")
     private String spznHost;
     //token保存
@@ -130,7 +122,7 @@ public class APIServiceImpl implements APIService {
         }*/
         //生成指纹
         fingerTookit = new FingerTookit();
-        log.info("api中jobj:{}",jobj);
+        log.info("api中jobj: {}",jobj);
         String fingerprint = fingerTookit.buildFingerprint(jobj);
         jobj.put("fingerprint", fingerprint);
         log.info("获取tip传参:" + jobj.toString());
@@ -247,6 +239,7 @@ public class APIServiceImpl implements APIService {
             post.setHeader("X-trustagw-access-token", tipAccessToken);
             post.setHeader("Host", spznHost);
             post.setHeader("idToken", idToken);
+            log.info("requestAPI中 X-trustuser-access-token,  {}  ========================= X-trustagw-access-token:  {} ,====================Host: {},=========================idToken: {} ",userAccessToken,tipAccessToken,spznHost,idToken);
             //post.setHeader("cookie",);
             // 构建消息实体
             StringEntity entity = new StringEntity(JSONObject.toJSONString(param), Charset.forName("UTF-8"));

@@ -129,6 +129,12 @@
             <artifactId>guava</artifactId>
             <version>20.0</version>
         </dependency>
+       <!-- ssl 信任所有请求连接 -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>fluent-hc</artifactId>
+            <version>4.5.4</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>vi_api</finalName>

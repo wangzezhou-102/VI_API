@@ -32,12 +32,12 @@ public class SSOController {
    @ResponseBody
    public void getidToken(HttpServletRequest request){
        String id_token = request.getParameter("id_token");
-       log.info("控制器中获取id_token:  " + id_token);
+       log.info("控制器中获取id_token:  {}",id_token);
    }
 
    @GetMapping("/spzn/logout")
-    public String logout(HttpServletRequest request) {
-       String logout = ssoService.logout(request);
+    public String logout(HttpServletRequest request,HttpServletResponse response) {
+       String logout = ssoService.logout(request,response);
        return logout;
    }
 

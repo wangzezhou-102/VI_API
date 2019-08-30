@@ -18,8 +18,6 @@ import javax.annotation.Resource;
 @CrossOrigin(value = "*", maxAge = 3600)
 @Slf4j
 public class FilterController {
-    @Resource
-    private APIService apiService;
 
 //	public static final String INDEX_PATH =
 //	System.getProperty("user.dir") + File.separator + "resources" + File.separator + "index.html";
@@ -30,7 +28,5 @@ public class FilterController {
     }
 
     @RequestMapping("/bkzx/**")
-    public String szsk1() {
-        return "/index.html";
-    }
+    public String szsk1() { return "/index.html"; }
 }

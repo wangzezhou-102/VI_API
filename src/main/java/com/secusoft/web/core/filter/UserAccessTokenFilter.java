@@ -6,6 +6,7 @@ import com.secusoft.web.core.util.StringUtils;
 import com.secusoft.web.service.APIService;
 import com.secusoft.web.service.SSOService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.methods.HttpGet;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,7 +46,7 @@ public class UserAccessTokenFilter implements Filter {
         String id_token = request.getParameter("id_token");
         HttpSession session = request.getSession();
         //设置session 过期时间
-        session.setMaxInactiveInterval(10);
+        session.setMaxInactiveInterval(43200);
         String userAccessToken = (String)session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
         if(StringUtils.isEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken)){
@@ -65,7 +66,7 @@ public class UserAccessTokenFilter implements Filter {
                 queryStr = URLEncoder.encode(queryStr, "UTF-8");
                 requestPath.append("?").append(queryStr);
             }
-	        String redirectUrl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18?enterpriseId" +
+	        String redirectUrl = "https://"+ tipHost +"/enduser/sp/sso/policejwt18?enterpriseId" +
                     "=police&redirect_uri="+requestPath+"&user_access_token="+userToken;
 	        log.info("重定向: {}",  redirectUrl);
             response.sendRedirect(redirectUrl);
@@ -92,20 +93,9 @@ public class UserAccessTokenFilter implements Filter {
                 log.info("ApplicationName: {}",resolveIdToken.getApplicationName());
                 log.info("PhoneNumer: {}",resolveIdToken.getPhoneNumber());
                 log.info("Mobile: {}",resolveIdToken.getMobile());
+                log.info("Name: {}",resolveIdToken.getName());
                 //设置cookies
-                Cookie cookie= new Cookie("appName",resolveIdToken.getApplicationName());
-                Cookie cookie1 = new Cookie("purchaseId", resolveIdToken.getPurchaseId());
-                Cookie cookie2 = new Cookie("sp_application_session_id", resolveIdToken.getExtendFields().get("sp_application_session_id"));
-                cookie.setPath("/");
-                cookie.setMaxAge(-1);
-                cookie1.setPath("/");
-                cookie1.setMaxAge(-1);
-                cookie2.setPath("/");
-                cookie2.setMaxAge(-1);
-                response.addCookie(cookie);
-                response.addCookie(cookie1);
-                response.addCookie(cookie2);
-                log.info("cookie信息保存成功!");
+                log.info("cookie信息保存暂无保存!");
                 //log.info("sessionid: {}",request.getSession());
 	            //解析成功，id_token 符合标准，向后置去发送（保证tipToken 已经获取成功）
                 //ssoService.sendIdToken(request);

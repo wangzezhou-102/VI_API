@@ -2,6 +2,7 @@ package com.secusoft.web.core.support;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Encoder;
 
@@ -13,8 +14,10 @@ import java.util.TreeMap;
 @Slf4j
 public class FingerTookit {
 	//应用信息
-    private String appId = "aba0fd";
-    private String appKey = "dcfc5eb12db7f91a";
+	@Value("${spzn.appid}")
+    private String appId = "41965e";
+	@Value("${spzn.appkey}")
+    private String appKey = "0fb484d964852e2b";
 
     /*public FingerTookit(String appId,String appKey){
     	 this.appId = appId;

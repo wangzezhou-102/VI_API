@@ -50,8 +50,8 @@ public class SSOServiceImpl implements SSOService {
     //获取IdToken
     public void getIdToken(HttpSession session) {
         log.info("开始获取idToken");
-        String posturl = "http://tap.hzgaaqfwpt.hzs.zj:8081/enduser/sp/sso/policejwt18";
-        String redirecturi = "https://spzn.hzgaaqfwpt.hzs.zj/getidtoken";
+        String posturl = "https://"+ tipHost+"/enduser/sp/sso/policejwt18";
+        String redirecturi = "https://"+ spznHost +"/getidtoken";
         HttpGet getidtoken = null;
         try {
             String encode = URLEncoder.encode(redirecturi, "UTF-8");
@@ -157,43 +157,18 @@ public class SSOServiceImpl implements SSOService {
         return HttpClients.createDefault();
     }
     @Override
-    public String logout(HttpServletRequest request) {
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
         log.info("系统准备登出...");
         HttpSession session = request.getSession();
         DingdangUserRetriever.User resolveIdToken = (DingdangUserRetriever.User) session.getAttribute("resolveIdToken");
-        HttpGet get = null;
-        String url = null;
-        try {
-            url = "http://" + tipHost + "/api/public/bff/v1/isv/hzos_isv_logout";
-            URIBuilder uriBuilder = new URIBuilder(url);
-            uriBuilder.addParameter("sp_application_session_id", resolveIdToken.getExtendFields().get("sp_application_session_id"));
-            uriBuilder.addParameter("appName", resolveIdToken.getApplicationName());
-            log.info("应用会话id: {}",resolveIdToken.getExtendFields().get("sp_application_session_id"));
-            log.info("应用: {}",resolveIdToken.getApplicationName());
-            log.info("应用id: {}", resolveIdToken.getPurchaseId());
-            uriBuilder.addParameter("purchaseId",resolveIdToken.getPurchaseId());
-            uriBuilder.addParameter("logoutType","logout");//logout-登出 超时-timeOut
-            URI uri = uriBuilder.build();
-            url = url + "?sp_application_session_id=" +
-                    resolveIdToken.getExtendFields().get("sp_application_session_id")+
-                    "&appName="+resolveIdToken.getApplicationName()+"&purchaseId="+
-                    resolveIdToken.getPurchaseId()+"&logoutType=logout";
-            log.info("url: {}", url);
-            log.info("系统登出成功!");
-            return "redirect:"+ url;
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (get != null) {
-                try {//断开链接
-                    get.releaseConnection();
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return null;
+        String url = "https://" + tipHost + "/api/public/bff/v1/isv/hzos_isv_logout";
+        url = url + "?sp_application_session_id=" +
+                resolveIdToken.getExtendFields().get("sp_application_session_id")+
+                "&appName="+resolveIdToken.getApplicationName()+"&purchaseId="+
+                resolveIdToken.getPurchaseId()+"&logoutType=logout";
+        log.info("url: {}", url);
+        log.info("系统登出成功!");
+        return "redirect:"+ url;
     }
 
 }

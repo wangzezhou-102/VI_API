@@ -24,5 +24,5 @@ public interface SSOService {
     //解析idToken
     DingdangUserRetriever.User resolveIdToken(String idToken)throws JoseException, IOException;
     //应用系统登出
-    String logout(HttpServletRequest request);
+    String logout(HttpServletRequest request,HttpServletResponse response);
 }
