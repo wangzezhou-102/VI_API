@@ -75,7 +75,6 @@ public class UserInfoServiceImpl implements UserInfoService {
                 JSONObject data = resultJson.getJSONObject("data");
                 ResultVo result = new ResultVo();
                 result.setData(data.getJSONObject("basicInformation"));
-                log.info("用户信息：{}",data.getJSONObject("basicInformation"));
                 log.info("获取用户信息成功！");
                 return result;
             }else{

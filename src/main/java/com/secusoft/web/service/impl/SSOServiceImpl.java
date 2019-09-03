@@ -157,18 +157,18 @@ public class SSOServiceImpl implements SSOService {
         return HttpClients.createDefault();
     }
     @Override
-    public String logout(HttpServletRequest request, HttpServletResponse response) {
+    public String logout(HttpServletRequest request, HttpServletResponse response) throws Exception{
         log.info("系统准备登出...");
         HttpSession session = request.getSession();
         DingdangUserRetriever.User resolveIdToken = (DingdangUserRetriever.User) session.getAttribute("resolveIdToken");
         String url = "https://" + tipHost + "/api/public/bff/v1/isv/hzos_isv_logout";
         url = url + "?sp_application_session_id=" +
                 resolveIdToken.getExtendFields().get("sp_application_session_id")+
-                "&appName="+resolveIdToken.getApplicationName()+"&purchaseId="+
-                resolveIdToken.getPurchaseId()+"&logoutType=logout";
+                "&appName=&purchaseId="+ resolveIdToken.getPurchaseId()+"&logoutType=logout";
+        log.info("appName: {}",resolveIdToken.getApplicationName());
         log.info("url: {}", url);
         log.info("系统登出成功!");
-        return "redirect:"+ url;
+        return "redirect:" + url;
     }
 
 }

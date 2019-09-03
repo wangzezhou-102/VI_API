@@ -68,35 +68,6 @@ public class APIServiceImpl implements APIService {
             log.info("ApiServiceImpl中session 信息: {}" ,session.getId());
             QuartzUtil.addJob("tiptoken"+ uuid, TokenTask.class, cron, session);//添加任务
         }
-        //匹配时间
-        /*Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        //提前过期时间获取tiptoken
-        String dateCron = QuartzCronDateUtil.getDateCron(calendar.getTime());
-        StringBuffer dateCronBuffer = new StringBuffer(dateCron);
-        //计算时间间隔
-        Integer expiresIn = (Integer) session.getAttribute("expiresIn");
-        if(expiresIn > 0){
-            int m = expiresIn / 60;
-            if(m >= 1){
-                int h = m / 60;
-                if(h >= 1){//1小时以上的时间间隔
-                    if(h >= 24){//过期时间超过24小时
-
-                    }else{
-                        int i = dateCronBuffer.indexOf(" ", 6);
-                        dateCronBuffer.insert(i,"/"+h);
-                    }
-                }else{//3600s 为界限
-                    int i = dateCronBuffer.indexOf(" ", 3);
-                    dateCronBuffer.insert(i,"/"+ m);
-                }
-            } else {
-                //在第一个空格前设置时间间隔
-                int i = dateCronBuffer.indexOf(" ");
-                dateCronBuffer.insert(i,"/"+ expiresIn);
-            }
-        }*/
     }
     /**
      * 获取API访问令牌
@@ -115,17 +86,13 @@ public class APIServiceImpl implements APIService {
         JSONObject jobj = new JSONObject();
         jobj.put("app_id", appId);
         jobj.put("primary_token", userAccessToken);
-        /*//challenge和mid可以不传(建议传，提高安全性)
-        if(!StringUtils.isEmpty(challenge) && !StringUtils.isEmpty(mid)) {
-            jobj.put("challenge", challenge);
-            jobj.put("mid", mid);
-        }*/
+        //challenge和mid可以不传(建议传，提高安全性)
         //生成指纹
-        fingerTookit = new FingerTookit();
+        fingerTookit = new FingerTookit(appId,appKey);
         log.info("api中jobj: {}",jobj);
         String fingerprint = fingerTookit.buildFingerprint(jobj);
         jobj.put("fingerprint", fingerprint);
-        log.info("获取tip传参:" + jobj.toString());
+        log.info("获取tip传参:  {}", jobj.toString());
         //发送请求
         HttpPost post = null;
         try {
@@ -153,16 +120,14 @@ public class APIServiceImpl implements APIService {
                 //获取tip_access_token
                 String access_token = (String) responseObj.get("access_token");
                 Integer expiresIn = (Integer) responseObj.get("expires_in");
-                //String uid = (String) responseObj.get("uid");
                 //保存过期时间
                 session.setAttribute("expiresIn", expiresIn);
-                //session.setAttribute("uid", uid);
                 //保存tip_access_token
                 session.setAttribute("tipAccessToken", access_token);
-                log.info("TIP访问令牌：" + access_token);
-                log.info("TIP过期时间:"+  expiresIn);
+                log.info("TIP访问令牌：  {}", access_token);
+                log.info("TIP过期时间:  {}", expiresIn);
             } else {
-                log.info("tip令牌访问获取失败状态: " + statusCode);
+                log.info("tip令牌访问获取失败状态: {}", statusCode);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -239,7 +204,7 @@ public class APIServiceImpl implements APIService {
             post.setHeader("X-trustagw-access-token", tipAccessToken);
             post.setHeader("Host", spznHost);
             post.setHeader("idToken", idToken);
-            log.info("requestAPI中 X-trustuser-access-token,  {}  ========================= X-trustagw-access-token:  {} ,====================Host: {},=========================idToken: {} ",userAccessToken,tipAccessToken,spznHost,idToken);
+            //log.info("requestAPI中 X-trustuser-access-token,  {}  ========================= X-trustagw-access-token:  {} ,====================Host: {},=========================idToken: {} ",userAccessToken,tipAccessToken,spznHost,idToken);
             //post.setHeader("cookie",);
             // 构建消息实体
             StringEntity entity = new StringEntity(JSONObject.toJSONString(param), Charset.forName("UTF-8"));
@@ -329,15 +294,15 @@ public class APIServiceImpl implements APIService {
      */
     @Override
     public void requestAPIURL(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("请求图像资源开始：");
+        log.info("请求图像资源开始：");
         HttpSession session = request.getSession();
         String tipAccessToken = (String)session.getAttribute("tipAccessToken");
-        System.out.println("tiptoken："+tipAccessToken);
+        log.info("tiptoken："+tipAccessToken);
         String picUrl = null;
         try {
             picUrl = request.getQueryString();
-            URL url = new URL("https://"+tipUrl+"/spzn/pic?" + picUrl);
-            System.out.println("请求图像完整路径: https://"+tipUrl+"/spzn/pic?" + picUrl);
+            URL url = new URL("https://" + tipUrl + "/spzn/pic?" + picUrl);
+            log.info("请求图像完整路径: https://" + tipUrl + "/spzn/pic?" + picUrl);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
@@ -366,7 +331,6 @@ public class APIServiceImpl implements APIService {
             });
             //设置请求方式为get
             conn.setRequestMethod(HttpMethod.GET.name());
-            //conn.setRequestProperty("X-trustuser-access-token",userAccessToken);
             conn.setRequestProperty("X-trustagw-access-token",tipAccessToken);
             conn.setRequestProperty("Host",spznHost);
             conn.setConnectTimeout(5000);
@@ -387,9 +351,7 @@ public class APIServiceImpl implements APIService {
     }
 
     private static class MySocketFactory extends SSLSocketFactory {
-
         private final SSLSocketFactory delegate;
-
         public MySocketFactory(SSLSocketFactory sslSocketFactory) {
             this.delegate = sslSocketFactory;
         }

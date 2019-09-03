@@ -1,18 +1,12 @@
 package com.secusoft.web.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.secusoft.web.core.common.Constants;
 import com.secusoft.web.core.util.ResponseUtil;
 import com.secusoft.web.model.ResultVo;
 import com.secusoft.web.service.APIService;
-import org.apache.http.HttpEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 

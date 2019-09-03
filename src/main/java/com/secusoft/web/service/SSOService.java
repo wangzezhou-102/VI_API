@@ -14,9 +14,6 @@ import java.io.IOException;
  * @date 2019-07-19
  */
 public interface SSOService {
-   /* //获取用户详细信息
-    ResultVo getUserDetailInfo(HttpSession session)throws JoseException, IOException;
-  */
    //获取idToken
     void getIdToken(HttpSession session);
     //向后置发送idToken
@@ -24,5 +21,5 @@ public interface SSOService {
     //解析idToken
     DingdangUserRetriever.User resolveIdToken(String idToken)throws JoseException, IOException;
     //应用系统登出
-    String logout(HttpServletRequest request,HttpServletResponse response);
+    String logout(HttpServletRequest request,HttpServletResponse response) throws  Exception;
 }

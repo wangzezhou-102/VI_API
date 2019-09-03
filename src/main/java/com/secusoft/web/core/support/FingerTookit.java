@@ -14,15 +14,14 @@ import java.util.TreeMap;
 @Slf4j
 public class FingerTookit {
 	//应用信息
-	@Value("${spzn.appid}")
-    private String appId = "41965e";
-	@Value("${spzn.appkey}")
-    private String appKey = "0fb484d964852e2b";
+    private String appId;
 
-    /*public FingerTookit(String appId,String appKey){
+    private String appKey;
+
+    public FingerTookit(String appId,String appKey){
     	 this.appId = appId;
          this.appKey = appKey;
-    }*/
+    }
 	/**
 	 * 生成指纹
 	 * @param json

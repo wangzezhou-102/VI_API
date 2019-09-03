@@ -1,10 +1,6 @@
 package com.secusoft.web.service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.secusoft.web.model.ResultVo;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;

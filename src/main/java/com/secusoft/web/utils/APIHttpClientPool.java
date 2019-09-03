@@ -1,13 +1,9 @@
 package com.secusoft.web.utils;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.http.*;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -27,15 +23,11 @@ import org.springframework.stereotype.Service;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLHandshakeException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.nio.charset.Charset;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -51,10 +43,6 @@ import java.util.regex.Pattern;
 public class APIHttpClientPool {
 	private static final Logger log = LoggerFactory.getLogger(APIHttpClientPool.class);
 	private volatile static APIHttpClientPool HttpClientConnectionPool;
-	//	public static final int MAX_TOTAL_CONNECTIONS = 50;
-//	public static final int MAX_ROUTE_CONNECTIONS = 20;
-//	public static final int CONNECT_TIMEOUT = 3000; // 连接时间
-//	public static final int SOCKET_TIMEOUT = 5000; // 获取内容时间
 	public static final int MAX_TOTAL_CONNECTIONS = 50;
 	public static final int MAX_ROUTE_CONNECTIONS = 20;
 	public static final int CONNECT_TIMEOUT = 5 * 1000; // 连接时间

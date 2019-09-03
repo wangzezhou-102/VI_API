@@ -46,7 +46,7 @@ public class UserAccessTokenFilter implements Filter {
         String id_token = request.getParameter("id_token");
         HttpSession session = request.getSession();
         //设置session 过期时间
-        session.setMaxInactiveInterval(43200);
+        session.setMaxInactiveInterval(36000);
         String userAccessToken = (String)session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
         if(StringUtils.isEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken)){
@@ -61,6 +61,9 @@ public class UserAccessTokenFilter implements Filter {
         String userToken = StringUtils.isEmpty(user_access_token)?userAccessToken:user_access_token;
         if(StringUtils.isEmpty(idToken)&&StringUtils.isEmpty(id_token)&&StringUtils.isNotEmpty(userToken)){
             StringBuffer requestPath = request.getRequestURL();
+            if ( requestPath.toString().startsWith("http:")) {
+                requestPath.insert('s',4);
+            }
             String queryStr = request.getQueryString();
             if(StringUtils.isNotEmpty(queryStr)){
                 queryStr = URLEncoder.encode(queryStr, "UTF-8");
@@ -84,31 +87,43 @@ public class UserAccessTokenFilter implements Filter {
 	            log.info("前置过滤器解析获得idToken的uuid:  {}",  uuid);
 	            log.info("前置过滤器解析获得idToken的access_token: {}", access_token );
 	            log.info("前置过滤器解析或得idToken的用户名:  {}", resolveIdToken.getUsername());
-                log.info("ApplcationName: {}",resolveIdToken.getApplicationName());
-                log.info("Email: {}",resolveIdToken.getEmail());
+                log.info("ApplcationName: {}", resolveIdToken.getApplicationName());
+                log.info("Email: {}", resolveIdToken.getEmail());
                 log.info("ExternalId: {}",resolveIdToken.getExternalId());
                 log.info("ExtendFielads:  {}", JSON.toJSONString(resolveIdToken.getExtendFields()));
                 log.info("UserId: {}",  resolveIdToken.getUserId());
                 log.info("PurchaseId: {}", resolveIdToken.getPurchaseId());
-                log.info("ApplicationName: {}",resolveIdToken.getApplicationName());
-                log.info("PhoneNumer: {}",resolveIdToken.getPhoneNumber());
-                log.info("Mobile: {}",resolveIdToken.getMobile());
-                log.info("Name: {}",resolveIdToken.getName());
+                log.info("ApplicationName: {}", resolveIdToken.getApplicationName());
+                log.info("PhoneNumer: {}", resolveIdToken.getPhoneNumber());
+                log.info("Mobile: {}", resolveIdToken.getMobile());
+                log.info("Name: {}", resolveIdToken.getName());
                 //设置cookies
                 log.info("cookie信息保存暂无保存!");
                 //log.info("sessionid: {}",request.getSession());
 	            //解析成功，id_token 符合标准，向后置去发送（保证tipToken 已经获取成功）
-                //ssoService.sendIdToken(request);
                 //tipToken过期处理
                 //apiService.reTipToken(session);
 	            log.info("过滤器中session信息: " + session.getId());
-                //ssoService.logout(request,response);
             } catch (JoseException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        /*if (request.getRequestURI().equals("/spzn/logout")) {
+            log.info("系统准备登出...");
+            DingdangUserRetriever.User resolveIdToken = (DingdangUserRetriever.User) session.getAttribute("resolveIdToken");
+            String url = "https://" + tipHost + "/api/public/bff/v1/isv/hzos_isv_logout";
+            url = url + "?sp_application_session_id=" +
+                    resolveIdToken.getExtendFields().get("sp_application_session_id")+
+                    "&appName="+ resolveIdToken.getApplicationName()+"&purchaseId="+
+                    resolveIdToken.getPurchaseId()+"&logoutType=logout";
+            log.info("appName: {}",resolveIdToken.getApplicationName());
+            log.info("url: {}", url);
+            log.info("系统登出成功!");
+            response.sendRedirect(url);
+            return;
+        }*/
         /*if (request.getSession(false) == null) {
             log.info("session已失效!");
             Cookie[] cookies = request.getCookies();

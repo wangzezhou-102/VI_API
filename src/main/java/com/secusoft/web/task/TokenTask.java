@@ -32,7 +32,7 @@ public class TokenTask implements Job {
         HttpSession session = (HttpSession) map.get("params");
         log.info("session信息 : {}",session.getId());
         log.info("获取新的TipToken..." );
-        apiServiceImpl.getTipAccessToken(session);
+        //apiServiceImpl.getTipAccessToken(session);
         log.info("获取TipToken成功");
     }
 }
