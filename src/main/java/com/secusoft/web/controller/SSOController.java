@@ -41,12 +41,15 @@ public class SSOController {
 
    @PostMapping("/spzn/logout")
     public JSONObject logout(HttpServletRequest request){
-       DingdangUserRetriever.User resolveIdToken = (DingdangUserRetriever.User)request.getSession().getAttribute("resolveIdToken");
+       HttpSession session = request.getSession();
+       DingdangUserRetriever.User resolveIdToken = (DingdangUserRetriever.User)session.getAttribute("resolveIdToken");
        JSONObject jsonObject = new JSONObject();
        jsonObject.put("sp_application_session_id",resolveIdToken.getExtendFields().get("sp_application_session_id"));
        jsonObject.put("appName",resolveIdToken.getApplicationName());
        jsonObject.put("purchaseId",resolveIdToken.getPurchaseId());
        jsonObject.put("logoutType","logout");
+       session.removeAttribute("resolveIdToken");
+       session.removeAttribute("idToken");
        return jsonObject;
    }
 

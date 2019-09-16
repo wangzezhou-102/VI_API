@@ -143,30 +143,6 @@ public class APIServiceImpl implements APIService {
         }
     }
 
-    //SSL 证书验证 用于https协议
-    public static CloseableHttpClient createSSLClientDefault() {
-        try {
-            //使用 loadTrustMaterial() 方法实现一个信任策略，信任所有证书
-            SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
-                // 信任所有
-                public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                    return true;
-                }
-            }).build();
-            //NoopHostnameVerifier类:  作为主机名验证工具，实质上关闭了主机名验证，它接受任何
-            //有效的SSL会话并匹配到目标主机。
-            HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
-            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
-            return HttpClients.custom().setSSLSocketFactory(sslsf).build();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        }
-        return HttpClients.createDefault();
-    }
     /**
      * 业务API 对接
      */
@@ -183,6 +159,7 @@ public class APIServiceImpl implements APIService {
             getTipAccessToken(session);
         }
         HttpPost post = null;
+        HttpGet get = null;
         //处理请求路径
         String requestURI = request.getRequestURI();
         log.info("请求相对路径： {}", requestURI);
@@ -195,17 +172,24 @@ public class APIServiceImpl implements APIService {
             if ( StringUtils.isNotEmpty(queryString)) {
                 url = url + "?" + queryString;
             }
-            post = new HttpPost(url);
+            /*if (request.getMethod().equalsIgnoreCase("GET")) {
+                get = new HttpGet(url);
+            }
+            if (request.getMethod().equalsIgnoreCase("POST")) {
+                post = new HttpPost(url);
+            }*/
             log.info("业务请求的完整路径： {}" , url);
             // 构造消息头
+            post = new HttpPost(url);
             post.setHeader("Content-type", "application/json; charset=utf-8");
             // 填入双令牌
             post.setHeader("X-trustuser-access-token", userAccessToken);
             post.setHeader("X-trustagw-access-token", tipAccessToken);
             post.setHeader("Host", spznHost);
             post.setHeader("idToken", idToken);
+            String ipAddr = getIpAddr(request);
+            post.setHeader("x-forwarded-for", ipAddr);
             //log.info("requestAPI中 X-trustuser-access-token,  {}  ========================= X-trustagw-access-token:  {} ,====================Host: {},=========================idToken: {} ",userAccessToken,tipAccessToken,spznHost,idToken);
-            //post.setHeader("cookie",);
             // 构建消息实体
             StringEntity entity = new StringEntity(JSONObject.toJSONString(param), Charset.forName("UTF-8"));
             entity.setContentEncoding("UTF-8");
@@ -233,6 +217,49 @@ public class APIServiceImpl implements APIService {
             }
         }
         return ResultVo.failure(BizExceptionEnum.SERVER_ERROR);
+    }
+
+    /**
+     * 获取用户真实IP地址，不使用request.getRemoteAddr()的原因是有可能用户使用了代理软件方式避免真实IP地址,
+     * 可是，如果通过了多级反向代理的话，X-Forwarded-For的值并不止一个，而是一串IP值
+     *
+     * @return ip
+     */
+    private String getIpAddr(HttpServletRequest request) {
+        String ip = request.getHeader("x-forwarded-for");
+        log.info("x-forwarded-for ip: " + ip);
+        if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
+            // 多次反向代理后会有多个ip值，第一个ip才是真实ip
+            /*if (ip.indexOf(",") != -1) {
+                ip = ip.split(",")[0];
+            }*/
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+            log.info("Proxy-Client-IP ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+            log.info("WL-Proxy-Client-IP ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+            log.info("HTTP_CLIENT_IP ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+            log.info("HTTP_X_FORWARDED_FOR ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+            log.info("X-Real-IP ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+            log.info("getRemoteAddr ip: " + ip);
+        }
+        log.info("客户端PC真实IP: " + ip);
+        return ip;
     }
     /**
      * 获取图片
@@ -288,6 +315,30 @@ public class APIServiceImpl implements APIService {
                 }
             }
         }
+    }
+    //SSL 证书验证 用于https协议
+    public static CloseableHttpClient createSSLClientDefault() {
+        try {
+            //使用 loadTrustMaterial() 方法实现一个信任策略，信任所有证书
+            SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
+                // 信任所有
+                public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                    return true;
+                }
+            }).build();
+            //NoopHostnameVerifier类:  作为主机名验证工具，实质上关闭了主机名验证，它接受任何
+            //有效的SSL会话并匹配到目标主机。
+            HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
+            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
+            return HttpClients.custom().setSSLSocketFactory(sslsf).build();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+        return HttpClients.createDefault();
     }
     /**
      * 获取图片(暂无使用)

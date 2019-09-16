@@ -40,6 +40,7 @@ public class UserAccessTokenFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest request = (HttpServletRequest)req;
         HttpServletResponse response = (HttpServletResponse)resp;
+        response.setHeader("x-frame-options", "ALLOW-FROM");
 	    //获取user_access_token
         String user_access_token =  request.getParameter("user_access_token");
         //获取id_token
@@ -59,10 +60,10 @@ public class UserAccessTokenFilter implements Filter {
             apiService.getTipAccessToken(session);
         }
         String userToken = StringUtils.isEmpty(user_access_token)?userAccessToken:user_access_token;
-        if(StringUtils.isEmpty(idToken)&&StringUtils.isEmpty(id_token)&&StringUtils.isNotEmpty(userToken)){
+        if(StringUtils.isEmpty(idToken) && StringUtils.isEmpty(id_token) && StringUtils.isNotEmpty(userToken)){
             StringBuffer requestPath = request.getRequestURL();
             if ( requestPath.toString().startsWith("http:")) {
-                requestPath.insert('s',4);
+                requestPath.insert(4,'s');
             }
             String queryStr = request.getQueryString();
             if(StringUtils.isNotEmpty(queryStr)){
