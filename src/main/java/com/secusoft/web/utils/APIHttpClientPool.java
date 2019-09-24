@@ -50,7 +50,6 @@ public class APIHttpClientPool {
 	private static PoolingHttpClientConnectionManager cm = null;
 	private static CloseableHttpClient httpclient;
 	private static CloseableHttpClient httpsclient;
-
 	/**
 	 * 初始化连接池
 	 */
@@ -75,11 +74,9 @@ public class APIHttpClientPool {
 					if (executionCount >= 2) {// 如果超过最大重试次数，那么就不要继续了
 						return false;
 					}
-
 					if (exception instanceof NoHttpResponseException) {// 如果服务器丢掉了连接，那么就重试
 						return true;
 					}
-
 					/*if (exception instanceof SSLHandshakeException) {// 不要重试SSL握手异常
 						return false;
 					}*/
@@ -91,7 +88,6 @@ public class APIHttpClientPool {
 					return false;
 				}
 			};
-
 			//使用 loadTrustMaterial() 方法实现一个信任策略，信任所有证书
 			SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
 				// 信任所有
@@ -103,7 +99,6 @@ public class APIHttpClientPool {
 			//有效的SSL会话并匹配到目标主机。
 			HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
 			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
-
 			//http协议
 			httpclient = HttpClients.custom()
 					.setConnectionManager(cm)
@@ -182,7 +177,7 @@ public class APIHttpClientPool {
 	}
 
 	/**
-	 * Get方法封装，发get送请求，获取响应内容
+	 * Get方法封装，发送get请求，获取响应内容
 	 */
 	public static String fetchByGetMethod(String protocol,String getUrl, Map<String, String> headMap) {
 		String charset = null;
@@ -223,7 +218,6 @@ public class APIHttpClientPool {
 			if (bytes == null) {
 				return null;
 			}
-
 			// 从content-type中获取编码方式
 			Header header = response.getFirstHeader("Content-Type");
 			if (header != null) charset = getCharSet2(header.getValue());
@@ -257,7 +251,7 @@ public class APIHttpClientPool {
 	 * @param headMap
 	 * @return
 	 */
-	public static String fetchByPostMethod(String postUrl, StringEntity paramsEntity, Map<String, String> headMap) {
+	public static String fetchByPostMethod(String protocol, String postUrl, StringEntity paramsEntity, Map<String, String> headMap) {
 		String resultStr = null;
 		HttpPost httpPost = new HttpPost(postUrl);
 		httpPost.addHeader("Accept", "Application/json");
@@ -265,13 +259,18 @@ public class APIHttpClientPool {
 		//httpPost.addHeader("Content-Length",contentLength);//StringEntity中已经包含参数长度属性无需再次设置
 		httpPost.addHeader("Connection", "keep-alive");
 		httpPost.setEntity(paramsEntity);
-		System.out.println("httpClientEntity:"+httpPost.getEntity());
+		log.info("httpClientEntity:" + httpPost.getEntity());
 		for (Map.Entry<String, String> entry : headMap.entrySet()) {
 			httpPost.addHeader(entry.getKey(), entry.getValue());
 		}
-		HttpResponse response;
+		HttpResponse response = null;
 		try {
-			response = httpclient.execute(httpPost);
+			if ("http".equalsIgnoreCase(protocol)) {
+				response = httpclient.execute(httpPost);
+			}
+			if ("https".equalsIgnoreCase(protocol)) {
+				response = httpsclient.execute(httpPost);
+			}
 			HttpEntity entity = response.getEntity();
 			resultStr = EntityUtils.toString(entity, "utf-8");
 			EntityUtils.consume(entity);
@@ -296,9 +295,7 @@ public class APIHttpClientPool {
 			httpget.addHeader("Accept", "text/html, application/xhtml+xml, */*");
 			httpget.addHeader("Accept-Language", "zh-CN");
 			httpget.addHeader("Accept-Encoding", "gzip, deflate");
-
 			HttpResponse response = null;
-
 			response = httpclient.execute(httpget);
 			int statusCode = response.getStatusLine().getStatusCode();
 			if (statusCode != HttpStatus.SC_OK) {
@@ -349,7 +346,7 @@ public class APIHttpClientPool {
 	 * @param paramsEntity
 	 * @return
 	 */
-	public static String fetchByPostMethod(String postUrl, StringEntity paramsEntity){
+	public static String fetchByPostMethod(String protocol, String postUrl, StringEntity paramsEntity){
 		String resultStr = null;
 		HttpPost httpPost = new HttpPost(postUrl);
 		httpPost.setEntity(paramsEntity);
@@ -357,10 +354,14 @@ public class APIHttpClientPool {
 		httpPost.addHeader("Content-Type","Application/json;charset=utf-8");
 		//httpPost.addHeader("Content-Length",contentLength);//StringEntity中已经包含参数长度属性无需再次设置
 		httpPost.addHeader("Connection","keep-alive");
-
-		HttpResponse response;
+		HttpResponse response = null;
 		try {
-			response = httpclient.execute(httpPost);
+			if ( "http".equalsIgnoreCase(protocol)) {
+				response = httpclient.execute(httpPost);
+			}
+			if ("https".equalsIgnoreCase(protocol)) {
+				response = httpsclient.execute(httpPost);
+			}
 			HttpEntity entity = response.getEntity();
 			resultStr = EntityUtils.toString(entity,"utf-8");
 			EntityUtils.consume(entity);

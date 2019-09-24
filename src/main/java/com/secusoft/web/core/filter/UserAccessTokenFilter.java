@@ -2,19 +2,22 @@ package com.secusoft.web.core.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
+import com.secusoft.web.core.util.ResponseUtil;
 import com.secusoft.web.core.util.StringUtils;
+import com.secusoft.web.model.ResultVo;
 import com.secusoft.web.service.APIService;
 import com.secusoft.web.service.SSOService;
+import com.secusoft.web.service.UserInfoService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.methods.HttpGet;
+import org.jose4j.json.internal.json_simple.JSONObject;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import springfox.documentation.spring.web.json.Json;
 
 import javax.servlet.*;
-import javax.servlet.http.Cookie;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -29,6 +32,8 @@ public class UserAccessTokenFilter implements Filter {
     private APIService apiService;
     @Autowired
     private SSOService ssoService;
+    @Autowired
+    private UserInfoService userInfoService;
     @Value("${tip.host}")
     private String tipHost;
 
@@ -40,22 +45,28 @@ public class UserAccessTokenFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest request = (HttpServletRequest)req;
         HttpServletResponse response = (HttpServletResponse)resp;
-        response.setHeader("x-frame-options", "ALLOW-FROM");
+        response.setHeader("X-Frame-Options", "ALLOW-FROM");
 	    //获取user_access_token
         String user_access_token =  request.getParameter("user_access_token");
         //获取id_token
         String id_token = request.getParameter("id_token");
-        HttpSession session = request.getSession();
-        //设置session 过期时间
-        session.setMaxInactiveInterval(36000);
+        HttpSession session = null;
+        if (request.getSession(false) == null) {
+            session = request.getSession();
+            log.info("创建新会话");
+            //设置session 过期时间
+            session.setMaxInactiveInterval(3600);
+        } else {
+            session = request.getSession();
+        }
+        log.info("过滤器中sessionid： {}", session.getId());
+        //用户信息清空，重新登录
         String userAccessToken = (String)session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
-        if(StringUtils.isEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken)){
-            return;
-        }
+
         if(StringUtils.isNotEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken)){ // tac首次请求转发到spzn 携带user_access_token
             session.setAttribute("userAccessToken", user_access_token);
-	        log.info("过滤器中的user_access_token: {}", user_access_token);
+	        log.info("过滤器中的user_access_token:  {}", user_access_token);
             //发送请求获取tiptoken
             apiService.getTipAccessToken(session);
         }
@@ -87,7 +98,8 @@ public class UserAccessTokenFilter implements Filter {
                 String access_token = resolveIdToken.getAzp();
 	            log.info("前置过滤器解析获得idToken的uuid:  {}",  uuid);
 	            log.info("前置过滤器解析获得idToken的access_token: {}", access_token );
-	            log.info("前置过滤器解析或得idToken的用户名:  {}", resolveIdToken.getUsername());
+	            log.info("前置过滤器解析获得idToken的用户名:  {}", resolveIdToken.getUsername());
+                log.info("Sub: {}", resolveIdToken.getSub());
                 log.info("ApplcationName: {}", resolveIdToken.getApplicationName());
                 log.info("Email: {}", resolveIdToken.getEmail());
                 log.info("ExternalId: {}",resolveIdToken.getExternalId());
@@ -111,43 +123,22 @@ public class UserAccessTokenFilter implements Filter {
                 e.printStackTrace();
             }
         }
-        /*if (request.getRequestURI().equals("/spzn/logout")) {
-            log.info("系统准备登出...");
-            DingdangUserRetriever.User resolveIdToken = (DingdangUserRetriever.User) session.getAttribute("resolveIdToken");
-            String url = "https://" + tipHost + "/api/public/bff/v1/isv/hzos_isv_logout";
-            url = url + "?sp_application_session_id=" +
-                    resolveIdToken.getExtendFields().get("sp_application_session_id")+
-                    "&appName="+ resolveIdToken.getApplicationName()+"&purchaseId="+
-                    resolveIdToken.getPurchaseId()+"&logoutType=logout";
-            log.info("appName: {}",resolveIdToken.getApplicationName());
-            log.info("url: {}", url);
-            log.info("系统登出成功!");
-            response.sendRedirect(url);
+        log.info("session中userAccessToken :   {}", (String)session.getAttribute("userAccessToken"));
+        log.info("session中resloveToken :   {}", session.getAttribute("resolveIdToken"));
+        if ( StringUtils.isEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken) && StringUtils.isEmpty(id_token) && StringUtils.isEmpty(idToken)) {
+            log.info("用户信息过期，超时登出");
+            log.info("过期新创建的 sessionid: {}", session.getId());
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json; charset=utf-8");
+            ResultVo resultVo = new ResultVo();
+            resultVo.setCode(610);
+            resultVo.setMessage("会话超时");
+            String responseJsonStr = JSON.toJSONString(resultVo);
+            response.getWriter().write(responseJsonStr);
             return;
-        }*/
-        /*if (request.getSession(false) == null) {
-            log.info("session已失效!");
-            Cookie[] cookies = request.getCookies();
-            String url = "http://" + tipHost + "/api/public/bff/v1/isv/hzos_isv_logout?";
-            for (Cookie cookie: cookies) {
-                if (cookie.getName().equals("sp_application_session_id")){
-                    url += "sp_application_session_id=" + cookie.getValue()+"&";
-                    log.info("sp_applcation_session_id: {}",cookie.getValue());
-                }
-                if (cookie.getName().equalsIgnoreCase("appName")){
-                    url += "appName=" + cookie.getValue()+"&";
-                    log.info("appName: {}",cookie.getValue());
-                }
-                if (cookie.getName().equalsIgnoreCase("purchaseId")){
-                    url += "purchaseId=" + cookie.getValue()+"&";
-                    log.info("purchaseId: {}",cookie.getValue());
-                }
-            }
-            url += "logoutType=timeOut";
-            log.info("超时登出url: {}", url);
-            response.sendRedirect(url);
-            return;
-        }*/
+        }
+
+
         chain.doFilter(req,resp);
     }
     @Override

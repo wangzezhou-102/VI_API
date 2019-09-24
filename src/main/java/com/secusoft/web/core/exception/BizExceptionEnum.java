@@ -39,6 +39,7 @@ public enum BizExceptionEnum {
 	 */
 	SESSION_TIMEOUT(610, "会话超时"),
     SESSION_UNKNOW(611,"未知的会话异常"),
+	SESSION_LOGOUT(612, "退出会话"),
 
     /**
      * 文件上传

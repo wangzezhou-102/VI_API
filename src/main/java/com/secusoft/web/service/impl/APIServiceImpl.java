@@ -80,7 +80,8 @@ public class APIServiceImpl implements APIService {
         String userAccessToken = (String) session.getAttribute("userAccessToken");
         //检查参数
         if (StringUtils.isEmpty(userAccessToken)) {
-            throw new InvalidParameterException("userAccessToken empty");
+            //throw new InvalidParameterException("userAccessToken empty");
+            return;
         }
         //填充消息
         JSONObject jobj = new JSONObject();
@@ -142,7 +143,6 @@ public class APIServiceImpl implements APIService {
             }
         }
     }
-
     /**
      * 业务API 对接
      */
@@ -155,7 +155,7 @@ public class APIServiceImpl implements APIService {
         String userAccessToken = (String) session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
         //判断是否有令牌
-        if (StringUtils.isEmpty(tipAccessToken) || StringUtils.isEmpty(userAccessToken)) {
+        if (StringUtils.isEmpty(tipAccessToken)) {
             getTipAccessToken(session);
         }
         HttpPost post = null;
@@ -172,12 +172,6 @@ public class APIServiceImpl implements APIService {
             if ( StringUtils.isNotEmpty(queryString)) {
                 url = url + "?" + queryString;
             }
-            /*if (request.getMethod().equalsIgnoreCase("GET")) {
-                get = new HttpGet(url);
-            }
-            if (request.getMethod().equalsIgnoreCase("POST")) {
-                post = new HttpPost(url);
-            }*/
             log.info("业务请求的完整路径： {}" , url);
             // 构造消息头
             post = new HttpPost(url);
@@ -186,10 +180,15 @@ public class APIServiceImpl implements APIService {
             post.setHeader("X-trustuser-access-token", userAccessToken);
             post.setHeader("X-trustagw-access-token", tipAccessToken);
             post.setHeader("Host", spznHost);
+            if (StringUtils.isEmpty(userAccessToken) && StringUtils.isEmpty(idToken)) {
+                ResultVo resultVo = new ResultVo();
+                resultVo.setCode(610);
+                resultVo.setMessage("会话超时");
+                return resultVo;
+            }
             post.setHeader("idToken", idToken);
             String ipAddr = getIpAddr(request);
             post.setHeader("x-forwarded-for", ipAddr);
-            //log.info("requestAPI中 X-trustuser-access-token,  {}  ========================= X-trustagw-access-token:  {} ,====================Host: {},=========================idToken: {} ",userAccessToken,tipAccessToken,spznHost,idToken);
             // 构建消息实体
             StringEntity entity = new StringEntity(JSONObject.toJSONString(param), Charset.forName("UTF-8"));
             entity.setContentEncoding("UTF-8");
@@ -218,49 +217,6 @@ public class APIServiceImpl implements APIService {
         }
         return ResultVo.failure(BizExceptionEnum.SERVER_ERROR);
     }
-
-    /**
-     * 获取用户真实IP地址，不使用request.getRemoteAddr()的原因是有可能用户使用了代理软件方式避免真实IP地址,
-     * 可是，如果通过了多级反向代理的话，X-Forwarded-For的值并不止一个，而是一串IP值
-     *
-     * @return ip
-     */
-    private String getIpAddr(HttpServletRequest request) {
-        String ip = request.getHeader("x-forwarded-for");
-        log.info("x-forwarded-for ip: " + ip);
-        if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
-            // 多次反向代理后会有多个ip值，第一个ip才是真实ip
-            /*if (ip.indexOf(",") != -1) {
-                ip = ip.split(",")[0];
-            }*/
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-            log.info("Proxy-Client-IP ip: " + ip);
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-            log.info("WL-Proxy-Client-IP ip: " + ip);
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_CLIENT_IP");
-            log.info("HTTP_CLIENT_IP ip: " + ip);
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-            log.info("HTTP_X_FORWARDED_FOR ip: " + ip);
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-            log.info("X-Real-IP ip: " + ip);
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-            log.info("getRemoteAddr ip: " + ip);
-        }
-        log.info("客户端PC真实IP: " + ip);
-        return ip;
-    }
     /**
      * 获取图片
      */
@@ -269,6 +225,7 @@ public class APIServiceImpl implements APIService {
         log.info("请求图像资源开始...");
         HttpSession session = request.getSession();
         String tipAccessToken = (String)session.getAttribute("tipAccessToken");
+        String idToken = (String)session.getAttribute("idToken");
         log.info("tiptoken：" + tipAccessToken);
         HttpGet get = null;
         String url = "https://" + tipUrl + "/spzn/pic";
@@ -288,6 +245,7 @@ public class APIServiceImpl implements APIService {
             // 填入双令牌
             get.setHeader("X-trustagw-access-token", tipAccessToken);
             get.setHeader("Host", spznHost);
+            get.setHeader("idToken", idToken);
             // 发送http请求
             HttpResponse response1 = httpClient.execute(get);
             int statusCode = response1.getStatusLine().getStatusCode();
@@ -472,16 +430,57 @@ public class APIServiceImpl implements APIService {
         }
         return outStream.toByteArray();
     }
-    
     /**
-     * 获取图片
+     * 获取用户真实IP地址，不使用request.getRemoteAddr()的原因是有可能用户使用了代理软件方式避免真实IP地址,
+     * 可是，如果通过了多级反向代理的话，X-Forwarded-For的值并不止一个，而是一串IP值
+     *
+     * @return ip
+     */
+    private String getIpAddr(HttpServletRequest request) {
+        String ip = request.getHeader("x-forwarded-for");
+        //log.info("x-forwarded-for ip: " + ip);
+        if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
+            // 多次反向代理后会有多个ip值，第一个ip才是真实ip
+            /*if (ip.indexOf(",") != -1) {
+                ip = ip.split(",")[0];
+            }*/
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+            log.info("Proxy-Client-IP ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+            log.info("WL-Proxy-Client-IP ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+            log.info("HTTP_CLIENT_IP ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+            log.info("HTTP_X_FORWARDED_FOR ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+            log.info("X-Real-IP ip: " + ip);
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+            log.info("getRemoteAddr ip: " + ip);
+        }
+        log.info("客户端PC真实IP: " + ip);
+        return ip;
+    }
+    /**
+     * 下载资源文件
      */
     @Override
     public void requestFile(HttpServletRequest request, HttpServletResponse response) {
-        log.info("请求图像资源开始...");
+        log.info("请求资源开始...");
         HttpSession session = request.getSession();
         String tipAccessToken = (String)session.getAttribute("tipAccessToken");
-        log.info("tiptoken："+tipAccessToken);
+        log.info("tiptoken：" + tipAccessToken);
         HttpGet get = null;
         String url = "https://" + tipUrl + "/spzn/file";
         String fileUrl = null;

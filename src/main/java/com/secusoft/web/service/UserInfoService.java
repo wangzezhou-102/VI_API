@@ -1,7 +1,11 @@
 package com.secusoft.web.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
 import com.secusoft.web.model.ResultVo;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author wangzezhou
@@ -26,4 +30,10 @@ public interface UserInfoService {
     ResultVo getOrgDetailInfo();
     //获取指定组织机构下的用户列表
     ResultVo getOrgUserList();
+    //菜单权限
+    ResultVo getMenuPermissions(HttpServletRequest request);
+    //获取用户角色和权限
+    ResultVo getRolePermissions (HttpServletRequest request);
+    //获取用户权限系统ps_access_token
+    JSONObject getPsAccessToken();
 }

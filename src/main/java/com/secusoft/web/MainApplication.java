@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -17,12 +18,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  */
 @Slf4j
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+@ServletComponentScan
 @EnableScheduling
 public class MainApplication{
-
     public static void main(String[] args) {
         SpringApplication.run(MainApplication.class, args);
         log.info("Application is success!");
     }
-
 }
