@@ -56,6 +56,10 @@ public class UserInfoController {
         return ResponseUtil.handle(HttpStatus.OK, rolePermissions);
     }
 
-
+    @PostMapping("/spzn/getpsmenups")
+    public ResponseEntity getRolePermissions3 (HttpServletRequest request) {
+        ResultVo rolePermissions = userInfoService.getMenuPermissions(request);
+        return ResponseUtil.handle(HttpStatus.OK, rolePermissions);
+    }
 
 }

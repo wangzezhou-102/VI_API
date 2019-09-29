@@ -42,10 +42,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.nio.charset.Charset;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
@@ -117,7 +114,6 @@ public class UserInfoServiceImpl implements UserInfoService {
     public JSONObject getPsAccessToken() {
         log.info("获取权限系统令牌");
         String url = "https://" + tipHost + "/oauth/token?client_id="+psappkey+"&client_secret="+psappsecret+"&grant_type=client_credentials&scop=read";
-        //String url ="https://"+ tipHost +"/oauth/token?client_id=117a880fd454e56b50753508959c0a65oI2rG2tYxdz&client_secret=5TTVR6GgQ8WMBWDkph2tHWk4Nn8lFDJ1OO1L1TElJk&grant_type=client_credentials&scop=read";
         HttpPost post = null;
         try {
             //https不验证证书
@@ -218,7 +214,6 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
         return ResultVo.failure(BizExceptionEnum.SERVER_ERROR);
     }
-
     //获取所有的角色信息
     public ResultVo getRoleList(){
         String url = "https://" + tipHost + "/api/bff/v1.2/developer/ps/all_roles";
@@ -270,6 +265,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         JSONArray permissionsnew = new JSONArray();
         //获取角色权限列表
         JSONArray  rolePermissions = data.getJSONArray("rolePermissions");
+        log.info("data: {}", rolePermissions);
         //添加用户名
         Permissions.put("username",data.getString("username"));
         //添加权限（去重）
@@ -279,8 +275,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             for (int j=0;j<permissionsold.size();j++) {
                 boolean isSame = false;
                 JSONObject jsonObject1 = permissionsold.getJSONObject(j);
-                //int size = permissionsnew.size();
-                //比较uuid是否相等（目前隐藏全城布控、离线分析）
+                //比较uuid是否相等（目前隐藏全城布控、离线分析、结伴同行）
                 for (int k=0;k<permissionsnew.size();k++) {
                     if (permissionsnew.getJSONObject(k).getString("uuid").equals(jsonObject1.getString("uuid")) ) {
                         isSame = true;
@@ -300,10 +295,9 @@ public class UserInfoServiceImpl implements UserInfoService {
                 if (permissionsnew.getJSONObject(j).getInteger("displayOrder") == i) {
                     jsonArray.add(permissionsnew.getJSONObject(j));
                 }
-           }
+            }
         }
-        Permissions.put("permissions",jsonArray);*/
-
+        Permissions.put("permissions", jsonArray);*/
         //log.info("Permssions {}",Permissions);
         //log.info("permssions {}",Permissions.getJSONArray("permissions"));
         /*JSONObject jsonObject1 = permissions.getJSONObject(i);
@@ -377,7 +371,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         //以上为模拟数据
         JSONArray permissions = jsonObject.getJSONArray("permissions");
         //log.info("有序菜单： {}",jsonArray);
-        log.info("无序菜单：{}",permissions);
+        //log.info("无序菜单：{}",permissionsnew);
         return ResultVo.success(permissions);
     }
     //判断用户是否有该角色

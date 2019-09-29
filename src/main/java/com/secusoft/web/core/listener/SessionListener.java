@@ -29,5 +29,6 @@ public class SessionListener implements HttpSessionListener {
        /* session.removeAttribute("userAccessToken");
         session.removeAttribute("idToken");*/
         session.invalidate();
+
     }
 }

@@ -1,6 +1,8 @@
 package com.secusoft.web.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.idsmanager.dingdang.jwt.DingdangUserRetriever;
 import com.secusoft.web.core.exception.BizExceptionEnum;
 import com.secusoft.web.core.support.FingerTookit;
 import com.secusoft.web.core.util.QuartzUtil;
@@ -154,6 +156,7 @@ public class APIServiceImpl implements APIService {
         String tipAccessToken = (String) session.getAttribute("tipAccessToken");
         String userAccessToken = (String) session.getAttribute("userAccessToken");
         String idToken = (String)session.getAttribute("idToken");
+        DingdangUserRetriever.User resolveIdToken = (DingdangUserRetriever.User)session.getAttribute("resolveIdToken");
         //判断是否有令牌
         if (StringUtils.isEmpty(tipAccessToken)) {
             getTipAccessToken(session);
@@ -187,6 +190,7 @@ public class APIServiceImpl implements APIService {
                 return resultVo;
             }
             post.setHeader("idToken", idToken);
+            post.setHeader("resolveIdToken", JSON.toJSONString(resolveIdToken));
             String ipAddr = getIpAddr(request);
             post.setHeader("x-forwarded-for", ipAddr);
             // 构建消息实体

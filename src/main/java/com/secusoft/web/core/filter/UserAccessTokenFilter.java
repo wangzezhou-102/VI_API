@@ -50,12 +50,13 @@ public class UserAccessTokenFilter implements Filter {
         String user_access_token =  request.getParameter("user_access_token");
         //获取id_token
         String id_token = request.getParameter("id_token");
+        String requesttest = request.getParameter("requesttest");
         HttpSession session = null;
         if (request.getSession(false) == null) {
             session = request.getSession();
             log.info("创建新会话");
             //设置session 过期时间
-            session.setMaxInactiveInterval(3600);
+            session.setMaxInactiveInterval(21600);
         } else {
             session = request.getSession();
         }
@@ -125,7 +126,7 @@ public class UserAccessTokenFilter implements Filter {
         }
         log.info("session中userAccessToken :   {}", (String)session.getAttribute("userAccessToken"));
         log.info("session中resloveToken :   {}", session.getAttribute("resolveIdToken"));
-        if ( StringUtils.isEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken) && StringUtils.isEmpty(id_token) && StringUtils.isEmpty(idToken)) {
+        if ( StringUtils.isEmpty(user_access_token) && StringUtils.isEmpty(userAccessToken) && StringUtils.isEmpty(id_token) && StringUtils.isEmpty(idToken) && StringUtils.isEmpty(requesttest)) {
             log.info("用户信息过期，超时登出");
             log.info("过期新创建的 sessionid: {}", session.getId());
             response.setCharacterEncoding("UTF-8");
@@ -137,7 +138,6 @@ public class UserAccessTokenFilter implements Filter {
             response.getWriter().write(responseJsonStr);
             return;
         }
-
 
         chain.doFilter(req,resp);
     }
